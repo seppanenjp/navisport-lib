@@ -32,8 +32,8 @@ export class User {
   organisationId?: string;
   results?: Result[];
   registrations?: Result[];
-  lastLogin: Date;
-  updated?: Date;
+  lastLogin: string; // Date;
+  updated?: string; // Date;
 
   constructor() {
     this.role = UserRole.USER;

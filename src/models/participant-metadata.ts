@@ -13,5 +13,5 @@ export class ParticipantMetadata {
   email?: string;
   phoneNumber?: string;
   gender: Gender;
-  updated?: Date;
+  updated?: string; // Date;
 }

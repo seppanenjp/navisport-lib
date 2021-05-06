@@ -12,19 +12,17 @@ export const getEventName = ({
 }): string => (series ? `${series.name}, ${name}` : name);
 
 export const geCourseClassDistance = (
-  event: Event,
+  courses: Course[],
   courseClass: CourseClass
 ): number => {
-  const courses = event.courses.filter((c) =>
+  const courseClassCourses = courses.filter((c) =>
     courseClass.courseIds.includes(c.id)
   );
-  if (courses.length) {
-    const distances: number[] = courses.map((course: Course) => {
-      return course.distance;
-    });
-    return Math.max(...distances) || 0;
-  }
-  return 0;
+  return courseClassCourses.length
+    ? Math.max(
+        ...courseClassCourses.map((course: Course) => course.distance)
+      ) || 0
+    : 0;
 };
 
 export const getCourseClassControlAmount = (
@@ -51,7 +49,7 @@ export const courseClassName = (
   courseClass: CourseClass
 ): string =>
   `${courseClass.name} / ${
-    (geCourseClassDistance(event, courseClass) || 0) / 1000
+    (geCourseClassDistance(event.courses, courseClass) || 0) / 1000
   }km`;
 
 export const getCourseClass = (

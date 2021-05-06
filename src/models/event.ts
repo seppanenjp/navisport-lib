@@ -48,8 +48,8 @@ export class Event {
   name: string;
   series?: Series;
   seriesId?: string;
-  begin: Date;
-  ending: Date;
+  begin: string; // Date;
+  ending: string; // Date;
   sport: Sport;
   classification: Classification;
   raceType: RaceType;
@@ -66,9 +66,9 @@ export class Event {
   invitation?: string;
   homePage?: string;
   logoUrl?: string;
-  startListPublication?: Date;
-  mapPublication?: Date;
-  mapImageUploaded?: Date;
+  startListPublication?: string; // Date;
+  mapPublication?: string; // Date;
+  mapImageUploaded?: string; // Date;
   organisation?: Organisation;
   organisationId: string;
   stageNumber?: number;
@@ -77,8 +77,8 @@ export class Event {
   hasRentalChips: boolean;
   registrationSettings?: RegistrationFormField[];
   links?: Link[];
-  registrationBegin?: Date;
-  registrationEnding?: Date;
+  registrationBegin?: string; // Date;
+  registrationEnding?: string; // Date;
   courses?: Course[];
   courseClasses?: CourseClass[];
   results?: Result[];
@@ -86,7 +86,7 @@ export class Event {
   devices?: Device[];
   passings?: Passing[];
   paymentCategories?: PaymentCategory[];
-  updated?: Date;
+  updated?: string; // Date;
 
   constructor() {
     this.courseClasses = [];

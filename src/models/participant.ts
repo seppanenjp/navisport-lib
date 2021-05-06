@@ -24,7 +24,7 @@ export class Participant {
   organisationId: string;
   private: boolean;
   additionalInfo?: string;
-  updated?: Date;
+  updated?: string; // Date;
   constructor() {
     this.paymentState = PaymentState.NOT_PAID;
     this.gender = Gender.NOT_SPECIFIED;

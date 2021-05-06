@@ -1,4 +1,5 @@
 import { Passing } from "./passing";
+import { Event } from "./event";
 
 export enum CheckpointType {
   START = "Start",
@@ -10,7 +11,7 @@ export class Checkpoint {
   id: string;
   name: string;
   devices: string[];
-  code?: number;
+  code?: string;
   type: CheckpointType;
   classId: string;
   event?: Event;
@@ -18,9 +19,10 @@ export class Checkpoint {
   passings?: Passing[];
   orderNumber: number;
   distance?: number;
-  updated?: Date;
+  updated?: string; // Date;
 
   constructor() {
+    this.type = CheckpointType.CHECKPOINT;
     this.devices = [];
   }
 }

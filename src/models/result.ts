@@ -4,6 +4,7 @@ import { ControlTime } from "./control-time";
 import { CourseClass } from "./course-class";
 import { User } from "./user";
 import { FeatureCollection } from "geojson";
+import { Event } from "./event";
 
 export enum ResultStatus {
   OK = "Ok",
@@ -51,9 +52,9 @@ export class Result {
   user?: User;
   userId?: string;
   leg?: number;
-  registerTime?: Date;
-  startTime?: Date;
-  readTime?: Date;
+  registerTime?: string; // Date;
+  startTime?: string; // Date;
+  readTime?: string; // Date;
   controlTimes?: ControlTime[];
   name: string;
   club?: string;
@@ -81,10 +82,10 @@ export class Result {
   time?: number;
   position?: number;
   points?: number;
-  updated: Date;
+  updated: string; // Date;
   passings?: Passing[];
   parsedControlTimes?: ControlTime[];
-  difference: number;
+  difference?: number;
 
   // This is only for frontend use
   syncTime: Date;

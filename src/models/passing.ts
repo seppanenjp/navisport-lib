@@ -12,6 +12,9 @@ export class Passing {
   checkpoint?: Checkpoint;
   checkpointId?: string;
   eventId: string;
-  timestamp: Date;
-  updated?: Date;
+  timestamp: string; // Date;
+  time?: number;
+  position?: number;
+  difference?: number;
+  updated?: string; // Date;
 }

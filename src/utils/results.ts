@@ -10,14 +10,17 @@ import { ControlTime, ControlTimeStatus } from "../models/control-time";
 import { cloneDeep, flatMap, last } from "lodash";
 import { controlLabel, getCourse } from "./events";
 
+export const readerControl = (controlTime: ControlTime): boolean =>
+  controlTime.code === 250;
+
 export const getDuration = ({
   duration,
   massStartTime,
   finishClosingTime,
 }: {
   duration?: number;
-  massStartTime?: Date;
-  finishClosingTime?: Date;
+  massStartTime?: string | Date;
+  finishClosingTime?: string | Date;
 }): number => {
   if (duration) {
     return duration * 60;
@@ -43,7 +46,11 @@ export const getPenaltyFromMissingControls = (
   if (courseClass.penalty && courseClass.type !== CourseClassType.ROGAINING) {
     return (
       courseClass.penalty *
-        (course.controls.length - (result.parsedControlTimes.length - 1)) +
+        (course.controls.length -
+          (result.parsedControlTimes.filter(
+            (controlTime: ControlTime) => controlTime.number
+          ).length -
+            1)) +
       (result.additionalPenalty ? Number(result.additionalPenalty) : 0)
     );
   }
@@ -88,10 +95,7 @@ export const getResultTime = (
       result.parsedControlTimes.find(
         (controlTime: ControlTime) =>
           controlTime.number === course.controls.length
-      ) ||
-      result.parsedControlTimes.find(
-        (controlTime: ControlTime) => controlTime.code === 250
-      );
+      ) || result.parsedControlTimes.find(readerControl);
     if (!lastPunch) {
       result.status = ResultStatus.NOTIME;
     } else {
@@ -129,8 +133,7 @@ export const getTimeOffset = (
       ? new Date(courseClass.massStartTime).getTime()
       : new Date(result.startTime).getTime();
     return (
-      (result.controlTimes.find((controlTime) => controlTime.code === 250)
-        ?.time ?? 0) -
+      (result.controlTimes.find(readerControl)?.time ?? 0) -
       Math.floor((new Date(result.readTime).getTime() - startTime) / 1000)
     );
   }
@@ -144,7 +147,7 @@ export const formatResultTime = ({
   status: ResultStatus;
   time?: number;
 }): string =>
-  [ResultStatus.NOTIME, ResultStatus.DNS].includes(status)
+  [ResultStatus.NOTIME, ResultStatus.DNS].includes(status) || !time
     ? "-"
     : time?.toHms();
 
@@ -187,7 +190,7 @@ export const resultSort = (firstResult: Result, secondResult: Result) => {
   return 0;
 };
 
-const getStatusWeight = (status: ResultStatus): number => {
+export const getStatusWeight = (status: ResultStatus): number => {
   switch (status) {
     case ResultStatus.OK:
     case ResultStatus.UNKNOWN:
@@ -326,13 +329,15 @@ export const resultsWithTimeAndPosition = (
   flatMap(
     courseClasses.map((courseClass: CourseClass) => {
       const classResults = results.filter(
-        (result: Result) => result.classId === courseClass.id && result.readTime
+        (result: Result) =>
+          result.classId === courseClass.id &&
+          result.status !== ResultStatus.REGISTERED // result.readTime //
       );
       courses
         .filter((course: Course) => courseClass.courseIds.includes(course.id))
         .forEach((course: Course) => {
           const courseResults = classResults.filter(
-            (result: Result) => result.courseId === course.id && result.readTime
+            (result: Result) => result.courseId === course.id
           );
           courseResults.forEach((result: Result) => {
             parseResult(result, courseClass, course);
@@ -343,6 +348,11 @@ export const resultsWithTimeAndPosition = (
         });
       return setClassPositions(classResults);
     })
+  ).concat(
+    results.filter(
+      (result: Result) =>
+        result.status === ResultStatus.REGISTERED && result.registerTime
+    )
   );
 
 export const getTimeDifference = (results: Result[], result: Result): number =>
@@ -413,8 +423,8 @@ export const setControlPositions = (
         splitTimes.push(controlTime.split.time);
       }
     });
-    legTimes.sort();
-    splitTimes.sort();
+    legTimes.sort((a, b) => a - b);
+    splitTimes.sort((a, b) => a - b);
     results.forEach((result: Result) => {
       const controlTime = result.parsedControlTimes?.find(
         (c) => c.number === index + 1
@@ -439,8 +449,9 @@ export const checkControlCode = (
   punchCode: number,
   controlCode: number | number[]
 ): boolean =>
-  punchCode === controlCode ||
-  (Array.isArray(controlCode) && controlCode.includes(punchCode));
+  Number(punchCode) === Number(controlCode) ||
+  (Array.isArray(controlCode) &&
+    controlCode.map(Number).includes(Number(punchCode)));
 
 export const getMissingControls = (
   result: Result,
@@ -460,3 +471,27 @@ export const getMissingControls = (
   }
   return missing;
 };
+
+export const getIOFStatus = (status: ResultStatus): string => {
+  switch (status) {
+    case ResultStatus.OK:
+      return "OK";
+    case ResultStatus.DSQ:
+      return "Disqualified";
+    case ResultStatus.DNF:
+      return "DidNotFinish";
+    case ResultStatus.NOTIME:
+      return "NotCompeting";
+    case ResultStatus.MANUAL:
+      return "NotCompeting";
+    case ResultStatus.DNS:
+      return "NotCompeting";
+    default:
+      return "Inactive";
+  }
+};
+
+export const getStartTime = (
+  result: Result,
+  courseClass: CourseClass
+): string => courseClass.massStartTime || result.startTime;

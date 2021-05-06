@@ -23,7 +23,7 @@ export class Device {
   mode: DeviceMode;
   batteryLevel?: number;
   deviceType: DeviceType;
-  updated?: Date;
+  updated?: string; // Date;
 
   constructor() {
     this.mode = DeviceMode.EMIT_USB;

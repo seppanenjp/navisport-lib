@@ -3,7 +3,7 @@ export class CodeMap {
   organisationId: string;
   name: string;
   codes: CodeMapCode[];
-  updated?: Date;
+  updated?: string; // Date;
 
   constructor() {
     this.codes = [];

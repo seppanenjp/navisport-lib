@@ -9,7 +9,7 @@ export class Course {
   startNumber?: string;
   distance?: number;
   controls?: Control[];
-  updated: Date;
+  updated: string; // Date;
   results?: Result[];
 
   constructor(id?: string) {

@@ -1,4 +1,5 @@
 import { Organisation } from "./organisation";
+import { Event } from "./event";
 
 export enum SeriesType {
   INDIVIDUAL_EVENTS = "Individual events",
@@ -14,6 +15,11 @@ export class Series {
   maxExternalBibNumber?: number;
   seriesType: SeriesType;
   overallResults: boolean;
-  updated: Date;
+  updated: string; // Date;
   events?: Event[];
+
+  constructor() {
+    this.seriesType = SeriesType.INDIVIDUAL_EVENTS;
+    this.overallResults = false;
+  }
 }

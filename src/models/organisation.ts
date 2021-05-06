@@ -3,6 +3,7 @@ import { CodeMap } from "./code-map";
 import { Device } from "./device";
 import { Series } from "./series";
 import { Participant } from "./participant";
+import { Event } from "./event";
 
 export enum Licence {
   Basic = "Basic",
@@ -16,7 +17,15 @@ export enum OrganisationStatus {
   Disabled = "Disabled",
 }
 
-export class OrganisationSettings {}
+export class OrganisationSettings {
+  finishControl: number;
+  simpleMode: boolean;
+
+  constructor() {
+    this.finishControl = 100;
+    this.simpleMode = true;
+  }
+}
 
 export class Organisation {
   id: string;
@@ -34,7 +43,7 @@ export class Organisation {
   profileImage?: string;
   paymentReference?: number; // Latest payment
   primaryEmail?: string;
-  licenceExpiration: Date;
+  licenceExpiration: string; // Date;
   businessId?: string;
   phoneNumber?: string;
   postalAddress?: string;
@@ -43,7 +52,7 @@ export class Organisation {
   licenceUsage?: number;
   rentalChips?: string[];
   restrictions?: string[];
-  updated?: Date;
+  updated?: string; // Date;
 
   users?: User[];
   codeMaps?: CodeMap[];

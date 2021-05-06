@@ -20,11 +20,11 @@ export class CourseClass {
   eventId: string;
   orderNumber: number;
   legs?: number;
-  massStartTime?: Date;
-  secondMassStartTime?: Date;
-  finishClosingTime?: Date;
+  massStartTime?: string; // Date;
+  secondMassStartTime?: string; // Date;
+  finishClosingTime?: string; // Date;
   firstStartNumber?: number;
-  firstStartTime?: Date;
+  firstStartTime?: string; // Date;
   startInterval?: number;
   checkpoints?: Checkpoint[];
   checkpointIds: string[];
@@ -35,7 +35,7 @@ export class CourseClass {
   duration?: number;
   results?: Result[];
   courses?: Course[];
-  updated?: Date;
+  updated?: string; // Date;
 
   constructor(name = "Uusi sarja") {
     this.name = name;
