@@ -47,10 +47,9 @@ export const getPenaltyFromMissingControls = (
     return (
       courseClass.penalty *
         (course.controls.length -
-          (result.parsedControlTimes.filter(
+          result.parsedControlTimes.filter(
             (controlTime: ControlTime) => controlTime.number
-          ).length -
-            1)) +
+          ).length) +
       (result.additionalPenalty ? Number(result.additionalPenalty) : 0)
     );
   }
