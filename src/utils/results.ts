@@ -31,9 +31,8 @@ export const getDuration = ({
   const endTime: Date | undefined = finishClosingTime
     ? new Date(finishClosingTime)
     : undefined;
-
   return startTime && endTime
-    ? endTime.getSeconds() - startTime.getSeconds()
+    ? (endTime.getTime() - startTime.getTime()) / 1000
     : Number.MAX_SAFE_INTEGER;
 };
 
@@ -46,10 +45,10 @@ export const getPenaltyFromMissingControls = (
   if (courseClass.penalty && courseClass.type !== CourseClassType.ROGAINING) {
     const controls = [...course.controls];
     result.parsedControlTimes
-        .filter((controlTime: ControlTime) => controlTime.number)
-        .map((controlTime: ControlTime) =>
-      controls.splice(controlTime.number - 1, 1)
-    );
+      .filter((controlTime: ControlTime) => controlTime.number)
+      .map((controlTime: ControlTime) =>
+        controls.splice(controlTime.number - 1, 1)
+      );
 
     return controls
       .map((control: Control) => control.penalty || courseClass.penalty)
