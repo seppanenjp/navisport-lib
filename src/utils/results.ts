@@ -44,14 +44,25 @@ export const getPenaltyFromMissingControls = (
   course: Course
 ): number => {
   if (courseClass.penalty && courseClass.type !== CourseClassType.ROGAINING) {
-    return (
+    const controls = [...course.controls];
+    result.parsedControlTimes
+        .filter((controlTime: ControlTime) => controlTime.number)
+        .map((controlTime: ControlTime) =>
+      controls.splice(controlTime.number - 1, 1)
+    );
+
+    return controls
+      .map((control: Control) => control.penalty || courseClass.penalty)
+      .reduce((acc, curr) => curr + acc);
+
+    /*  return (
       courseClass.penalty *
         (course.controls.length -
           result.parsedControlTimes.filter(
             (controlTime: ControlTime) => controlTime.number
           ).length) +
       (result.additionalPenalty ? Number(result.additionalPenalty) : 0)
-    );
+    );*/
   }
   return 0;
 };

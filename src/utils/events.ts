@@ -1,7 +1,6 @@
 import { CourseClass } from "../models/course-class";
 import { Course } from "../models/course";
 import { Control } from "../models/control";
-import { Event } from "../models/event";
 
 export const getEventName = ({
   name,
@@ -15,9 +14,7 @@ export const geCourseClassDistance = (
   courses: Course[],
   courseClass: CourseClass
 ): number => {
-  const courseClassCourses = courses.filter((c) =>
-    courseClass.courseIds.includes(c.id)
-  );
+  const courseClassCourses = getCourseClassCourses(courseClass, courses);
   return courseClassCourses.length
     ? Math.max(
         ...courseClassCourses.map((course: Course) => course.distance)
@@ -26,14 +23,12 @@ export const geCourseClassDistance = (
 };
 
 export const getCourseClassControlAmount = (
-  event: Event,
+  courses: Course[],
   courseClass: CourseClass
 ): number => {
-  const courses = event.courses.filter((c) =>
-    courseClass.courseIds.includes(c.id)
-  );
+  const courseClassCourses = getCourseClassCourses(courseClass, courses);
   if (courses.length) {
-    const amount: number[] = courses.map((course: Course) => {
+    const amount: number[] = courseClassCourses.map((course: Course) => {
       return course.controls.length > 0 ? course.controls.length - 1 : 0;
     });
     return Math.max(...amount) || 0;
@@ -45,11 +40,11 @@ export const controlLabel = (control: Control): string | number | number[] =>
   control.label ? control.label : control.code;
 
 export const courseClassName = (
-  event: Event,
+  courses: Course[],
   courseClass: CourseClass
 ): string =>
   `${courseClass.name} / ${
-    (geCourseClassDistance(event.courses, courseClass) || 0) / 1000
+    (geCourseClassDistance(courses, courseClass) || 0) / 1000
   }km`;
 
 export const getCourseClass = (
@@ -61,16 +56,16 @@ export const getCourse = (courseId: string, courses: Course[]): Course =>
   courses.find((c) => c.id === courseId);
 
 export const getCourseClassCourses = (
-  classId: string,
+  courseClass: string | CourseClass,
   courses: Course[],
-  courseClasses: CourseClass[]
+  courseClasses: CourseClass[] = []
 ): Course[] => {
-  const courseClass: CourseClass | undefined = getCourseClass(
-    classId,
-    courseClasses
-  );
-  if (courseClass) {
-    return courses.filter((c) => courseClass.courseIds.includes(c.id));
+  const currentClass: CourseClass | undefined =
+    typeof courseClass === "string"
+      ? getCourseClass(courseClass, courseClasses)
+      : courseClass;
+  if (currentClass) {
+    return courses.filter((c) => currentClass.courseIds.includes(c.id));
   }
   return [];
 };

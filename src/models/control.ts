@@ -7,6 +7,7 @@ export class Control {
   label?: string;
   latitude?: number;
   longitude?: number;
+  penalty?: number;
 
   constructor(
     code: number,

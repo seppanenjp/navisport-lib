@@ -14,11 +14,7 @@ export class Course {
 
   constructor(id?: string) {
     this.name = "Uusi rata";
-    if (id) {
-      this.id = id;
-    } else {
-      this.id = uuid();
-    }
+    this.id = id || uuid();
     this.controls = [];
     this.distance = 0;
   }
