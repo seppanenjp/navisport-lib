@@ -27,7 +27,7 @@ export const getCourseClassControlAmount = (
   courseClass: CourseClass
 ): number => {
   const courseClassCourses = getCourseClassCourses(courseClass, courses);
-  if (courses.length) {
+  if (courseClassCourses.length) {
     const amount: number[] = courseClassCourses.map((course: Course) => {
       return course.controls.length > 0 ? course.controls.length - 1 : 0;
     });

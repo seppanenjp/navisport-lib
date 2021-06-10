@@ -6,7 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc && yarn rollup -c && rm -rf dist/dts",
-    "test": "jest"
+    "test": "jest",
+    "test:ci": "jest --runInBand"
   },
   "author": "",
   "license": "ISC",

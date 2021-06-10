@@ -27,6 +27,8 @@ describe("Event tests", () => {
     expect(
       getCourseClassCourses(courseClass, TEST_EVENT.courses).length
     ).toEqual(1);
+    expect(getCourseClassCourses(courseClass, []).length).toEqual(0);
+    expect(getCourseClassCourses("", TEST_EVENT.courses).length).toEqual(0);
   });
 
   test("Should get courseClass distance", () => {
@@ -41,6 +43,7 @@ describe("Event tests", () => {
     expect(
       getCourseClassControlAmount(TEST_EVENT.courses, courseClass)
     ).toEqual(24);
+    expect(getCourseClassControlAmount([], courseClass)).toEqual(0);
   });
 
   test("Should get courseClass name", () => {

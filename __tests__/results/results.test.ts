@@ -1,4 +1,11 @@
-import { ControlTime, getDuration, readerControl } from "../../src";
+import {
+  ControlTime,
+  getDuration,
+  readerControl,
+  getCourseClassCourses,
+  getPenaltyFromMissingControls,
+} from "../../src";
+import { TEST_EVENT } from "../../mock/event";
 
 describe("Result tests", () => {
   test("Should check correct reader control", () => {
@@ -17,5 +24,24 @@ describe("Result tests", () => {
     ).toEqual(7200);
 
     expect(getDuration({})).toEqual(Number.MAX_SAFE_INTEGER);
+  });
+
+  describe("Should get penalty from missing controls", () => {
+    test("No penalty if no missing controls", () => {
+      const courseClass = TEST_EVENT.courseClasses[0];
+      const course = getCourseClassCourses(courseClass, TEST_EVENT.courses)[0];
+      const result = TEST_EVENT.results.find(
+        (r) => r.classId === courseClass.id && r.courseId === course.id
+      );
+      expect(
+        getPenaltyFromMissingControls(result, courseClass, course)
+      ).toEqual(0);
+    });
+
+    test("No penalty if courseClass penalty is 0", () => {});
+
+    test("No penalty if courseClass is Rogaining", () => {});
+
+    test("Penalty if courseClass penalty > 0 and missing controls", () => {});
   });
 });
