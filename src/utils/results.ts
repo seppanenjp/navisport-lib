@@ -42,26 +42,26 @@ export const getPenaltyFromMissingControls = (
   courseClass: CourseClass,
   course: Course
 ): number => {
-  if (courseClass.penalty && courseClass.type !== CourseClassType.ROGAINING) {
-    const controls = [...course.controls];
-    result.parsedControlTimes
+  if (
+    courseClass.penalty ||
+    (course.controls.filter((control: Control) => Boolean(control.penalty))
+      .length > 0 &&
+      courseClass.type !== CourseClassType.ROGAINING)
+  ) {
+    const numbers = result.parsedControlTimes
       .filter((controlTime: ControlTime) => controlTime.number)
-      .map((controlTime: ControlTime) =>
-        controls.splice(controlTime.number - 1, 1)
-      );
-
-    return controls
-      .map((control: Control) => control.penalty || courseClass.penalty)
-      .reduce((acc, curr) => curr + acc);
-
-    /*  return (
-      courseClass.penalty *
-        (course.controls.length -
-          result.parsedControlTimes.filter(
-            (controlTime: ControlTime) => controlTime.number
-          ).length) +
-      (result.additionalPenalty ? Number(result.additionalPenalty) : 0)
-    );*/
+      .map((controlTime: ControlTime) => controlTime.number);
+    const controls = [...course.controls]
+      .map((control: Control, index: number) => ({
+        ...control,
+        number: index + 1,
+      }))
+      .filter((control: Control) => !numbers.includes(control.number));
+    return controls.length
+      ? controls
+          .map((control: Control) => control.penalty || courseClass.penalty)
+          .reduce((acc, curr) => curr + acc)
+      : 0;
   }
   return 0;
 };
@@ -109,9 +109,11 @@ export const getResultTime = (
       result.status = ResultStatus.NOTIME;
     } else {
       // Last punch time + penalty min
+
       const time: number =
         lastPunch.time +
-        60 * getPenaltyFromMissingControls(result, courseClass, course);
+        60 * getPenaltyFromMissingControls(result, courseClass, course) +
+        (result.additionalPenalty ? Number(result.additionalPenalty) : 0);
       return time > 0 ? time : 0;
     }
   } else {
