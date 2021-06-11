@@ -10,7 +10,7 @@ export const getEventName = ({
   series?: { name: string };
 }): string => (series ? `${series.name}, ${name}` : name);
 
-export const geCourseClassDistance = (
+export const getCourseClassDistance = (
   courses: Course[],
   courseClass: CourseClass
 ): number => {
@@ -44,7 +44,7 @@ export const courseClassName = (
   courseClass: CourseClass
 ): string =>
   `${courseClass.name} / ${
-    (geCourseClassDistance(courses, courseClass) || 0) / 1000
+    (getCourseClassDistance(courses, courseClass) || 0) / 1000
   }km`;
 
 export const getCourseClass = (

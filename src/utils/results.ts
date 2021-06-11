@@ -505,4 +505,4 @@ export const getIOFStatus = (status: ResultStatus): string => {
 export const getStartTime = (
   result: Result,
   courseClass: CourseClass
-): string => courseClass.massStartTime || result.startTime;
+): string => courseClass.massStartTime || result.startTime || "";
