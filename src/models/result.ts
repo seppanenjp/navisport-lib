@@ -99,5 +99,6 @@ export class Result {
     this.parsedControlTimes = [];
     this.nationality = "FIN";
     this.registered = false;
+    this.private = false;
   }
 }

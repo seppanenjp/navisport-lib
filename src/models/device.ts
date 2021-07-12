@@ -12,6 +12,29 @@ export enum DeviceType {
   RASPBERRY = "RASPBERRY",
 }
 
+export enum ApplicationMode {
+  AUTOMATON_START = "Automaton start",
+  AUTOMATON_FINISH = "Automaton finish",
+  AUTOMATON_FULL = "Automaton full",
+  ONLINE_CONTROL = "Online control",
+  START_TIMER = "Start timer",
+  MANUAL = "Manual",
+  EVENTS = "Events",
+  UNKNOWN = "Unknown",
+}
+
+export interface DeviceCommand {
+  id: string;
+  type: DeviceCommandType;
+  mode?: ApplicationMode;
+  message?: string;
+}
+
+export enum DeviceCommandType {
+  SPEAK = "Speak",
+  CHANGE_MODE = "Change mode",
+}
+
 export class Device {
   id: string;
   name?: string;
@@ -22,6 +45,8 @@ export class Device {
   passings?: Passing[];
   mode: DeviceMode;
   batteryLevel?: number;
+  applicationMode?: ApplicationMode;
+  serialStatus: boolean;
   deviceType: DeviceType;
   updated?: string; // Date;
 

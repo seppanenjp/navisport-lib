@@ -3,7 +3,7 @@ import {
   CourseClassType,
   PointSystem,
 } from "../models/course-class";
-import { Result, ResultStatus } from "../models/result";
+import { PaymentState, Result, ResultStatus } from "../models/result";
 import { Course } from "../models/course";
 import { Control } from "../models/control";
 import { ControlTime, ControlTimeStatus } from "../models/control-time";
@@ -36,7 +36,7 @@ export const getDuration = ({
     : Number.MAX_SAFE_INTEGER;
 };
 
-// Returns seconds
+// Returns minutes
 export const getPenaltyFromMissingControls = (
   result: Result,
   courseClass: CourseClass,
@@ -48,9 +48,11 @@ export const getPenaltyFromMissingControls = (
       .length > 0 &&
       courseClass.type !== CourseClassType.ROGAINING)
   ) {
-    const numbers = result.parsedControlTimes
-      .filter((controlTime: ControlTime) => controlTime.number)
-      .map((controlTime: ControlTime) => controlTime.number);
+    const numbers = result.parsedControlTimes?.length
+      ? result.parsedControlTimes
+          .filter((controlTime: ControlTime) => controlTime.number)
+          .map((controlTime: ControlTime) => controlTime.number)
+      : [];
     const controls = [...course.controls]
       .map((control: Control, index: number) => ({
         ...control,
@@ -59,7 +61,10 @@ export const getPenaltyFromMissingControls = (
       .filter((control: Control) => !numbers.includes(control.number));
     return controls.length
       ? controls
-          .map((control: Control) => control.penalty || courseClass.penalty)
+          .map(
+            (control: Control) =>
+              Number(control.penalty) || Number(courseClass.penalty) || 0
+          )
           .reduce((acc, curr) => curr + acc)
       : 0;
   }
@@ -96,38 +101,33 @@ export const getResultTime = (
   if ([ResultStatus.NOTIME, ResultStatus.DNS].includes(result.status)) {
     return 0;
   }
-  if (
-    result.parsedControlTimes?.length &&
-    ![ResultStatus.MANUAL].includes(result.status)
-  ) {
+  const penalty =
+    60 * getPenaltyFromMissingControls(result, courseClass, course) +
+    (result.additionalPenalty ? 60 * Number(result.additionalPenalty) : 0);
+  if (![ResultStatus.MANUAL].includes(result.status)) {
     const lastPunch: ControlTime =
-      result.parsedControlTimes.find(
+      result.parsedControlTimes?.find(
         (controlTime: ControlTime) =>
           controlTime.number === course.controls.length
-      ) || result.parsedControlTimes.find(readerControl);
-    if (!lastPunch) {
-      result.status = ResultStatus.NOTIME;
-    } else {
-      // Last punch time + penalty min
+      ) || result.parsedControlTimes?.find(readerControl);
 
-      const time: number =
-        lastPunch.time +
-        60 * getPenaltyFromMissingControls(result, courseClass, course) +
-        (result.additionalPenalty ? Number(result.additionalPenalty) : 0);
+    if (lastPunch?.time > 0) {
+      // Last punch time + penalty min
+      const time: number = lastPunch.time + penalty;
       return time > 0 ? time : 0;
     }
-  } else {
-    const startTime =
-      courseClass.massStartTime || result.startTime || result.registerTime;
-    if (startTime) {
-      const time = Math.floor(
+  }
+  const startTime =
+    courseClass.massStartTime || result.startTime || result.registerTime;
+  if (startTime && result.readTime) {
+    const time =
+      Math.floor(
         (new Date(result.readTime).getTime() - new Date(startTime).getTime()) /
           1000
-      );
-      return time > 0 ? time : 0;
-    }
-    return 0;
+      ) + penalty;
+    return time > 0 ? time : 0;
   }
+  return 0;
 };
 
 export const getTimeOffset = (
@@ -236,12 +236,9 @@ export const parseResult = (
     result.parsedControlTimes = validateControlTimes(
       result,
       courseClass,
-      course
-    )
-      .map((controlTime) => {
-        return { ...controlTime, time: controlTime.time - timeOffset };
-      })
-      .filter((controlTime) => controlTime.time >= -1);
+      course,
+      timeOffset
+    ).filter((controlTime) => controlTime.time >= -1);
   }
   // Set result time
   result.time = getResultTime(result, courseClass, course);
@@ -254,7 +251,7 @@ export const parseResult = (
       courseClass.pointSystem
     );
     result.points -= getPenaltyPoints(result, courseClass);
-    result.points = result.points < 0 ? 0 : result.points;
+    result.points = result.points > 0 ? result.points : 0;
   }
 };
 
@@ -290,7 +287,8 @@ export const clearControlNumbers = (controlTimes: ControlTime[]) =>
 export const validateControlTimes = (
   result: Result,
   courseClass: CourseClass,
-  course: Course
+  course: Course,
+  offset: number
 ): ControlTime[] => {
   let skipTime = 0;
   const controlTimes = cloneDeep(result.controlTimes);
@@ -312,13 +310,10 @@ export const validateControlTimes = (
       controlTime.time =
         controlTime.time !== -1 || // TODO: remove -1
         controlTime.status === ControlTimeStatus.CHECKED
-          ? controlTime.time - skipTime
+          ? controlTime.time - skipTime - offset
           : controlTime.time;
       controlTime.split = {
-        time:
-          controlTime.time - lastPunchTime > 0
-            ? controlTime.time - lastPunchTime
-            : 0,
+        time: controlTime.time - (lastPunchTime > 0 ? lastPunchTime : 0),
       };
       if (controlTime.time > 0 && !control.freeOrder) {
         if (control.skip) {
@@ -327,6 +322,10 @@ export const validateControlTimes = (
         lastPunchTime = controlTime.time;
       }
     }
+  }
+  const reader = controlTimes.find(readerControl);
+  if (reader) {
+    reader.time -= offset;
   }
   return controlTimes;
 };
@@ -396,38 +395,41 @@ export const getRogainingPoints = (
     // Remove last control if punched..
     controlTimes.splice(index, 1);
   }
-  return controlTimes
-    .map((controlTime: ControlTime) => {
-      const control = controls.find((c) =>
-        checkControlCode(controlTime.code, c.code)
-      );
-      if (!control) {
-        return 0;
-      }
-      const code = controlLabel(control);
-      if (system === PointSystem.FIRST_CODE) {
-        // Get first char
-        return Number(code.toString()[0]);
-      } else if (system === PointSystem.LAST_CODE) {
-        // Get last char
-        return Number(last(code.toString()));
-      } else {
-        return 1;
-      }
-    })
-    .reduce((acc, curr) => curr + acc);
+  return controlTimes.length
+    ? controlTimes
+        .map((controlTime: ControlTime) => {
+          const control = controls.find((c) =>
+            checkControlCode(controlTime.code, c.code)
+          );
+          if (!control) {
+            return 0;
+          }
+          const code = controlLabel(control);
+          if (system === PointSystem.FIRST_CODE) {
+            // Get first char
+            return Number(code.toString()[0]);
+          } else if (system === PointSystem.LAST_CODE) {
+            // Get last char
+            return Number(last(code.toString()));
+          } else {
+            return 1;
+          }
+        })
+        .reduce((acc, curr) => curr + acc)
+    : 0;
 };
 
 export const setControlPositions = (
   results: Result[],
   course: Course
 ): void => {
+  results = results.filter((r) => r.status === ResultStatus.OK);
   for (const [index] of course.controls.entries()) {
     const legTimes: number[] = [];
     const splitTimes: number[] = [];
     results.forEach((result: Result) => {
       const controlTime = result.parsedControlTimes?.find(
-        (c) => c.number === index + 1
+        (c) => c.number === index + 1 && c.time > 0
       );
       if (controlTime) {
         legTimes.push(controlTime.time);
@@ -506,3 +508,36 @@ export const getStartTime = (
   result: Result,
   courseClass: CourseClass
 ): string => courseClass.massStartTime || result.startTime || "";
+
+export const cloneRegistration = (
+  registration: Result,
+  eventId?: string,
+  classId?: string,
+  courseId?: string
+): Result => ({
+  ...new Result(),
+  name: registration.name,
+  club: registration.club,
+  eventId,
+  classId,
+  courseId,
+  userId: registration.userId,
+  nationality: registration.nationality,
+  secondaryChip: registration.secondaryChip,
+  sportId: registration.sportId,
+  iofId: registration.iofId,
+  externalId: registration.externalId,
+  licenceNumber: registration.licenceNumber,
+  bibNumber: registration.bibNumber,
+  birthYear: registration.birthYear,
+  paymentState: PaymentState.PAID,
+  seriesId: registration.seriesId,
+  chip: registration.chip,
+  rentalChip: registration.rentalChip,
+  email: registration.email,
+  phoneNumber: registration.phoneNumber,
+  gender: registration.gender,
+  private: registration.private || false,
+  registered: true,
+  municipality: registration.municipality,
+});

@@ -4,6 +4,7 @@ import { Gender, Result } from "./result";
 export enum UserRole {
   ADMIN = "Admin",
   USER = "User",
+  SUPER_ADMIN = "Super Admin",
 }
 
 export class User {

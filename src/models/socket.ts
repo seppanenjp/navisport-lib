@@ -14,6 +14,7 @@ export enum SocketOperation {
 export enum SocketSubject {
   Devices = "Devices",
   DeviceStatus = "Device status",
+  DevicePing = "Device ping",
   DeviceCommand = "Device command",
   CourseClass = "CourseClass",
   Course = "Course",

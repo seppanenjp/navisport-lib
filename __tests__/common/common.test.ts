@@ -35,7 +35,8 @@ describe("Common tests", () => {
     expect("1:10:10".toSeconds()).toEqual(4210);
     expect("01:10:10".toSeconds()).toEqual(4210);
 
-    expect("01.10.10".toSeconds()).toEqual(4210);
+    expect("01:10:10.250".toSeconds()).toEqual(4210);
+    expect("01:10:10.510".toSeconds()).toEqual(4210);
 
     expect("".toSeconds()).toEqual(null);
     expect("TMP".toSeconds()).toEqual(null);

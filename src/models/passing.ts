@@ -11,7 +11,7 @@ export class Passing {
   deviceId?: string;
   checkpoint?: Checkpoint;
   checkpointId?: string;
-  eventId: string;
+  eventId?: string;
   timestamp: string; // Date;
   time?: number;
   position?: number;

@@ -73,7 +73,7 @@ Array.prototype.extend = function (items = []) {
 
 String.prototype.toSeconds = function () {
   if (this.trim()) {
-    const p = this.replace(/\./g, ":").split(":");
+    const p = this.split(":");
     let seconds = 0;
     let minutes = 1;
 

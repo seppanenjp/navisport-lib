@@ -21,7 +21,12 @@ describe("Result tests", () => {
   const result = TEST_EVENT.results.find(
     (r) => r.classId === courseClass.id && r.courseId === course.id
   );
-  const validControlTimes = validateControlTimes(result, courseClass, course);
+  const validControlTimes = validateControlTimes(
+    result,
+    courseClass,
+    course,
+    0
+  );
   const missingControls = [...validControlTimes].splice(
     0,
     validControlTimes.length - 2
