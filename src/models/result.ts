@@ -78,6 +78,7 @@ export class Result {
   additionalInfo?: string;
   paymentCategory?: string;
   paymentReference?: number;
+  transactionId?: string;
   route?: FeatureCollection;
   time?: number;
   position?: number;
