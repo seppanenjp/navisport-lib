@@ -100,6 +100,7 @@ export class Event {
     this.mapInformation = createMapInformation();
     this.registrationSettings = createRegistrationSettings();
     this.paymentCategories = [];
+    this.passings = [];
   }
 }
 

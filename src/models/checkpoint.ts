@@ -11,6 +11,7 @@ export class Checkpoint {
   id: string;
   name: string;
   devices: string[];
+  group?: string;
   code?: string;
   type: CheckpointType;
   classId: string;

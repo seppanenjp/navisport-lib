@@ -25,6 +25,7 @@ export enum ApplicationMode {
 
 export interface DeviceCommand {
   id: string;
+  name?: string;
   type: DeviceCommandType;
   mode?: ApplicationMode;
   message?: string;
@@ -33,6 +34,7 @@ export interface DeviceCommand {
 export enum DeviceCommandType {
   SPEAK = "Speak",
   CHANGE_MODE = "Change mode",
+  CHANGE_NAME = "Change name",
 }
 
 export class Device {

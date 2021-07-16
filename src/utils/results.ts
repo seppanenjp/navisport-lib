@@ -7,8 +7,10 @@ import { PaymentState, Result, ResultStatus } from "../models/result";
 import { Course } from "../models/course";
 import { Control } from "../models/control";
 import { ControlTime, ControlTimeStatus } from "../models/control-time";
-import { cloneDeep, flatMap, last } from "lodash";
+import { cloneDeep, flatMap, last, orderBy } from "lodash";
 import { controlLabel, getCourse } from "./events";
+import { Checkpoint } from "../models/checkpoint";
+import { Passing } from "../models/passing";
 
 export const readerControl = (controlTime: ControlTime): boolean =>
   controlTime.code === 250;
@@ -301,15 +303,15 @@ export const validateControlTimes = (
         checkControlCode(ct.code, control.code) &&
         (courseClass.type !== CourseClassType.NOT_SPECIFIED ||
           isLast ||
-          ct.time > lastPunchTime ||
+          ct.time > lastPunchTime + skipTime + offset ||
           ct.time === -1 ||
           ct.status === ControlTimeStatus.CHECKED) // TODO: remove -1
     );
     if (controlTime) {
       controlTime.number = index + 1;
       controlTime.time =
-        controlTime.time !== -1 || // TODO: remove -1
-        controlTime.status === ControlTimeStatus.CHECKED
+        controlTime.time !== -1 && // TODO: remove -1
+        controlTime.status !== ControlTimeStatus.CHECKED
           ? controlTime.time - skipTime - offset
           : controlTime.time;
       controlTime.split = {
@@ -541,3 +543,127 @@ export const cloneRegistration = (
   registered: true,
   municipality: registration.municipality,
 });
+
+export const setCheckpointPositions = (
+  results: Result[],
+  checkpoint: Checkpoint
+): void => {
+  const passings: Passing[] = [];
+  const times: number[] = [];
+  results.forEach((result: Result) => {
+    const passing = result.passings?.find(
+      (p: Passing) => p.checkpointId === checkpoint.id
+    );
+    if (passing && result.startTime) {
+      passing.time = Math.floor(
+        (new Date(passing.timestamp).getTime() -
+          new Date(result.startTime).getTime()) /
+          1000
+      );
+      passings.push(passing);
+      times.push(passing.time);
+    }
+  });
+  times.sort((a, b) => a - b);
+  passings.forEach((passing: Passing) => {
+    passing.position = times.indexOf(passing.time) + 1;
+    passing.difference = passing.time - times[0];
+  });
+};
+
+export const smartResultSort = (
+  firstResult: Result,
+  secondResult: Result
+): number => {
+  const {
+    points: firstPoints,
+    time: firstTime,
+    status: firstStatus,
+    startTime: firstStarTime,
+  } = firstResult;
+  const {
+    points: secondPoints,
+    time: secondTime,
+    status: secondStatus,
+    startTime: secondStartTime,
+  } = secondResult;
+
+  // First sort by status Ok, DNS, DSQ
+  // Then check if some differences with times or points
+  // If not finished then should check last passing
+  // If not last passing then sort by start times
+
+  if (getStatusWeight(firstStatus) > getStatusWeight(secondStatus)) {
+    return 1;
+  }
+  if (getStatusWeight(secondStatus) > getStatusWeight(firstStatus)) {
+    return -1;
+  }
+
+  if (firstPoints > secondPoints) {
+    return -1;
+  }
+  if (firstPoints < secondPoints) {
+    return 1;
+  }
+
+  // Sort between final results
+  if (firstTime && secondTime) {
+    if (firstTime < secondTime) {
+      return -1;
+    }
+    if (firstTime > secondTime) {
+      return 1;
+    }
+  }
+
+  // Sort with passings
+  const firstPassingSort = passingSort(firstResult, secondResult);
+  if (firstPassingSort) {
+    return firstPassingSort;
+  }
+  const secondPassingSort = passingSort(secondResult, firstResult);
+  if (secondPassingSort) {
+    return secondPassingSort * -1;
+  }
+
+  // Result in finish should always be better than result without any passings
+  if (firstTime && !secondTime) {
+    return -1;
+  }
+  if (secondTime && !firstTime) {
+    return 1;
+  }
+
+  // If nothing else then sort with startTimes
+  if (firstStarTime && secondStartTime) {
+    const d1 = new Date(firstStarTime);
+    const d2 = new Date(secondStartTime);
+    if (d1 < d2) {
+      return -1;
+    } else if (d2 < d1) {
+      return 1;
+    }
+  }
+  return 0;
+};
+
+const passingSort = (firstResult: Result, secondResult: Result): number => {
+  const firstPassing = last(firstResult.passings);
+  if (firstPassing) {
+    const secondPassing = secondResult.passings.find(
+      (passing: Passing) => passing.checkpointId === firstPassing.checkpointId
+    );
+    if (firstPassing && secondPassing) {
+      if (firstPassing.position > secondPassing.position) {
+        return 1;
+      }
+      if (secondPassing.position > firstPassing.position) {
+        return -1;
+      }
+    } else {
+      return -1;
+    }
+  }
+  return 0;
+};
