@@ -32,6 +32,7 @@ declare global {
 
   interface String {
     toSeconds(): number | null;
+    urlify(): string;
   }
 
   interface Number {
@@ -86,6 +87,12 @@ String.prototype.toSeconds = function () {
     }
   }
   return null;
+};
+
+String.prototype.urlify = function () {
+  return this.toString().toLowerCase()
+    .normalize("NFD")
+    .replace(/([\u0300-\u036f]|[^0-9a-zA-Z])/g, "");
 };
 
 export enum HMSFormat {

@@ -8,7 +8,7 @@ export const getEventName = ({
 }: {
   name: string;
   series?: { name: string };
-}): string => (series ? `${series.name}, ${name}` : name);
+}): string => (series ? `${series.name}, ${name}` : name || "");
 
 export const getCourseClassDistance = (
   courses: Course[],
@@ -42,10 +42,10 @@ export const controlLabel = (control: Control): string | number | number[] =>
 export const courseClassName = (
   courses: Course[],
   courseClass: CourseClass
-): string =>
-  `${courseClass.name} / ${
-    (getCourseClassDistance(courses, courseClass) || 0) / 1000
-  }km`;
+): string => {
+  const distance = getCourseClassDistance(courses, courseClass) || 0;
+  return courseClass.name + (distance ? ` / ${distance / 1000}km` : "");
+};
 
 export const getCourseClass = (
   classId: string,
@@ -75,11 +75,11 @@ export const distanceToControl = (
   control: Control
 ): number => {
   let distance = 0;
-  controls.forEach((c) => {
-    distance += c.distance;
-    if (c === control) {
-      return;
+  for (let courseControl of controls) {
+    distance += courseControl.distance;
+    if (courseControl === control) {
+      return distance;
     }
-  });
-  return distance;
+  }
+  return 0;
 };

@@ -7,7 +7,7 @@ import { PaymentState, Result, ResultStatus } from "../models/result";
 import { Course } from "../models/course";
 import { Control } from "../models/control";
 import { ControlTime, ControlTimeStatus } from "../models/control-time";
-import { cloneDeep, flatMap, last, orderBy } from "lodash";
+import { cloneDeep, flatMap, last } from "lodash";
 import { controlLabel, getCourse } from "./events";
 import { Checkpoint } from "../models/checkpoint";
 import { Passing } from "../models/passing";
@@ -45,10 +45,10 @@ export const getPenaltyFromMissingControls = (
   course: Course
 ): number => {
   if (
-    courseClass.penalty ||
-    (course.controls.filter((control: Control) => Boolean(control.penalty))
-      .length > 0 &&
-      courseClass.type !== CourseClassType.ROGAINING)
+    (courseClass.penalty ||
+      course.controls.filter((control: Control) => Boolean(control.penalty))
+        .length > 0) &&
+    courseClass.type !== CourseClassType.ROGAINING
   ) {
     const numbers = result.parsedControlTimes?.length
       ? result.parsedControlTimes
@@ -112,7 +112,6 @@ export const getResultTime = (
         (controlTime: ControlTime) =>
           controlTime.number === course.controls.length
       ) || result.parsedControlTimes?.find(readerControl);
-
     if (lastPunch?.time > 0) {
       // Last punch time + penalty min
       const time: number = lastPunch.time + penalty;
@@ -246,6 +245,7 @@ export const parseResult = (
   result.time = getResultTime(result, courseClass, course);
 
   // Set result points
+  result.points = 0;
   if (courseClass.type === CourseClassType.ROGAINING && result.time) {
     result.points = getRogainingPoints(
       result.parsedControlTimes,
@@ -336,14 +336,14 @@ export const resultsWithTimeAndPosition = (
   courses: Course[] = [],
   courseClasses: CourseClass[] = [],
   results: Result[] = [],
-  controlPositions = false
+  controlPositions = false,
+  checkpointPositions = false
 ): Result[] =>
   flatMap(
     courseClasses.map((courseClass: CourseClass) => {
       const classResults = results.filter(
-        (result: Result) =>
-          result.classId === courseClass.id &&
-          result.status !== ResultStatus.REGISTERED // result.readTime //
+        (result: Result) => result.classId === courseClass.id
+        // result.readTime //
       );
       courses
         .filter((course: Course) => courseClass.courseIds.includes(course.id))
@@ -352,19 +352,24 @@ export const resultsWithTimeAndPosition = (
             (result: Result) => result.courseId === course.id
           );
           courseResults.forEach((result: Result) => {
-            parseResult(result, courseClass, course);
+            if (result.status !== ResultStatus.REGISTERED) {
+              parseResult(result, courseClass, course);
+            }
           });
           if (controlPositions) {
             setControlPositions(courseResults, course);
           }
         });
+      if (checkpointPositions && courseClass.checkpoints) {
+        courseClass.checkpoints.forEach((checkPoint: Checkpoint) =>
+          setCheckpointPositions(classResults, checkPoint)
+        );
+      }
+      /*if(event.pointSystem && courseClass.type !== CourseClassType.ROGAINING) {
+        calculatePoints(classResults, event.pointSystem)
+      }*/
       return setClassPositions(classResults);
     })
-  ).concat(
-    results.filter(
-      (result: Result) =>
-        result.status === ResultStatus.REGISTERED && result.registerTime
-    )
   );
 
 export const getTimeDifference = (results: Result[], result: Result): number =>
@@ -411,6 +416,10 @@ export const getRogainingPoints = (
             // Get first char
             return Number(code.toString()[0]);
           } else if (system === PointSystem.LAST_CODE) {
+            // const points = Number(last(code.toString()));
+            // Get last char or 10 if points 0
+            // return points > 0 ? points : 10;
+
             // Get last char
             return Number(last(code.toString()));
           } else {
@@ -667,3 +676,35 @@ const passingSort = (firstResult: Result, secondResult: Result): number => {
   }
   return 0;
 };
+
+interface CalculationSystem {
+  ok: string;
+  notOk: string;
+}
+
+const calculatePoints = (
+  results: Result[],
+  system: CalculationSystem
+): void => {
+  const ok = getCalculationSystem(system.ok);
+  const notOk = getCalculationSystem(system.notOk);
+
+  results.forEach((result: Result) => {
+    if ([ResultStatus.OK, ResultStatus.MANUAL].includes(result.status)) {
+      result.points = ok();
+    } else if (result.status !== ResultStatus.REGISTERED) {
+      result.points = notOk();
+    } else {
+      result.points = null;
+    }
+  });
+};
+
+const getCalculationSystem = (systemString: string): (() => number) =>
+  eval(
+    systemString
+      ? systemString
+          .replace(/\[FIRST_RESULT]/g, "results[0]")
+          .replace(/\[RESULT]/g, "result")
+      : null
+  );
