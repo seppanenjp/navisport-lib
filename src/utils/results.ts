@@ -15,6 +15,9 @@ import { Passing } from "../models/passing";
 export const readerControl = (controlTime: ControlTime): boolean =>
   controlTime.code === 250;
 
+export const checkedControlTime = (controlTime?: ControlTime): boolean =>
+  controlTime?.time === -1 || controlTime?.status === ControlTimeStatus.CHECKED;
+
 export const getDuration = ({
   duration,
   massStartTime,
@@ -304,23 +307,25 @@ export const validateControlTimes = (
         (courseClass.type !== CourseClassType.NOT_SPECIFIED ||
           isLast ||
           ct.time > lastPunchTime + skipTime + offset ||
-          ct.time === -1 ||
-          ct.status === ControlTimeStatus.CHECKED) // TODO: remove -1
+          checkedControlTime(ct))
     );
     if (controlTime) {
       controlTime.number = index + 1;
-      controlTime.time =
-        controlTime.time !== -1 && // TODO: remove -1
-        controlTime.status !== ControlTimeStatus.CHECKED
-          ? controlTime.time - skipTime - offset
-          : controlTime.time;
+      controlTime.time = checkedControlTime(controlTime)
+        ? controlTime.time
+        : controlTime.time - offset;
       controlTime.split = {
-        time: controlTime.time - (lastPunchTime > 0 ? lastPunchTime : 0),
+        time:
+          controlTime.time - skipTime - (lastPunchTime > 0 ? lastPunchTime : 0),
       };
-      if (controlTime.time > 0 && !control.freeOrder) {
+
+      if (controlTime.time >= 0 && !control.freeOrder) {
         if (control.skip) {
           skipTime += controlTime.split.time;
+          controlTime.split.time = 0;
         }
+
+        controlTime.time -= skipTime;
         lastPunchTime = controlTime.time;
       }
     }
@@ -682,7 +687,7 @@ interface CalculationSystem {
   notOk: string;
 }
 
-const calculatePoints = (
+export const calculatePoints = (
   results: Result[],
   system: CalculationSystem
 ): void => {

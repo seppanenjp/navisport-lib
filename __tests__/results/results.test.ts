@@ -12,6 +12,7 @@ import {
   ResultStatus,
   getMissingControls,
   getStartTime,
+  calculatePoints,
 } from "../../src";
 import { TEST_EVENT } from "../../mock/event";
 
@@ -203,4 +204,11 @@ describe("Result tests", () => {
       )
     ).toEqual(courseClassStartTime);
   });
+
+  /*  test("calculatePoints", () => {
+    calculatePoints(results, {
+      ok: "100 - [RESULT].position",
+      notOk: "1",
+    });
+  });*/
 });

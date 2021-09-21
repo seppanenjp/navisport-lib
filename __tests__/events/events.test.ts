@@ -55,7 +55,7 @@ describe("Event tests", () => {
 
   test("distanceToControl", () => {
     const controls = TEST_EVENT.courses[0].controls;
-    expect(distanceToControl(controls, controls[10])).toEqual(3705);
+    expect(distanceToControl(controls, controls[10])).toEqual(1606);
   });
 
   test("getCourseClass", () => {
