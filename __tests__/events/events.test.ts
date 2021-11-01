@@ -12,7 +12,7 @@ import {
   isRastilippuEvent,
 } from "../../src";
 import { TEST_EVENT } from "../../mock/event";
-import { Event } from "../../dist";
+import { Event } from "../../src";
 
 describe("Event tests", () => {
   test("getEventName", () => {

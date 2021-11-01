@@ -10,7 +10,7 @@ module.exports = {
         "text-summary",
         "html"
     ],
-
+    modulePathIgnorePatterns: ["<rootDir>/dist/"],
     roots: ["<rootDir>/__tests__/"],
 
     testMatch: ["**/+(*.)+(test).+(ts)"]
