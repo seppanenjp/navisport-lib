@@ -4,7 +4,7 @@ import { ControlTime } from "./control-time";
 import { CourseClass } from "./course-class";
 import { User } from "./user";
 import { FeatureCollection } from "geojson";
-import { Event } from "./event";
+import { Event, EventState, Sport } from "./event";
 
 export enum ResultStatus {
   OK = "Ok",
@@ -102,4 +102,34 @@ export class Result {
     this.registered = false;
     this.private = false;
   }
+}
+
+export interface MyResult {
+  id: string;
+  name: string;
+  club?: string;
+  position: number;
+  status: ResultStatus;
+  time: number;
+  difference: number;
+  route?: FeatureCollection;
+  courseClass: {
+    id: string;
+    name: string;
+    distance: number;
+  };
+  event: {
+    id: string;
+    begin: string;
+    ending: string;
+    name: string;
+    sport: Sport;
+    state: EventState;
+    latitude?: number;
+    longitude?: number;
+    series?: {
+      id: string;
+      name: string;
+    };
+  };
 }

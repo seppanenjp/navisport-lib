@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc && yarn rollup -c && rm -rf dist/dts",
+    "build": "tsc && yarn rollup -c && rm -rf dist/dts && rm -rf dist/src && rm -rf dist/mock",
     "test": "jest",
     "test:ci": "jest --runInBand"
   },

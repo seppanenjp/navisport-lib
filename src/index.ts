@@ -20,6 +20,7 @@ export * from "./models/participant-metadata";
 
 export * from "./utils/results";
 export * from "./utils/events";
+export * from "./utils/common";
 
 export {};
 
@@ -90,7 +91,8 @@ String.prototype.toSeconds = function () {
 };
 
 String.prototype.urlify = function () {
-  return this.toString().toLowerCase()
+  return this.toString()
+    .toLowerCase()
     .normalize("NFD")
     .replace(/([\u0300-\u036f]|[^0-9a-zA-Z])/g, "");
 };

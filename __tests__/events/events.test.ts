@@ -9,8 +9,10 @@ import {
   getCourseClassControlAmount,
   getCourseClassCourses,
   getEventName,
+  isRastilippuEvent,
 } from "../../src";
 import { TEST_EVENT } from "../../mock/event";
+import { Event } from "../../dist";
 
 describe("Event tests", () => {
   test("getEventName", () => {
@@ -75,5 +77,12 @@ describe("Event tests", () => {
   test("controlLabel", () => {
     expect(controlLabel(new Control(31))).toEqual(31);
     expect(controlLabel({ ...new Control(31), label: "32" })).toEqual("32");
+  });
+
+  test("isRastilippuEvent", () => {
+    expect(isRastilippuEvent(TEST_EVENT)).toEqual(false);
+    expect(
+      isRastilippuEvent({ ...new Event(), externalApplication: "Rastilippu" })
+    ).toEqual(true);
   });
 });

@@ -206,8 +206,9 @@ describe("Result tests", () => {
   });
 
   /*  test("calculatePoints", () => {
-    calculatePoints(results, {
-      ok: "100 - [RESULT].position",
+    calculatePoints(TEST_EVENT.results.splice(0, 5), {
+      ok:
+        "1000 - (([RESULT].time - [FIRST_RESULT].time) / [FIRST_RESULT].time) * 1000",
       notOk: "1",
     });
   });*/

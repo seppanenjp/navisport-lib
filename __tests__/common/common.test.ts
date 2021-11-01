@@ -1,4 +1,5 @@
 import * as global from "../../src";
+import { uuid, validEmail, validUUID } from "../../src";
 require("../../src");
 
 describe("Common tests", () => {
@@ -49,5 +50,19 @@ describe("Common tests", () => {
     expect(Number(3600).toHms()).toEqual("1:00:00");
     expect(Number(4210).toHms()).toEqual("1:10:10");
     expect(Number(-10).toHms()).toEqual(null);
+  });
+
+  test("urlify", () => {
+    expect("Ääkköset on kivoja".urlify()).toEqual("aakkosetonkivoja");
+    expect("ÅLAND on Affenanmaa".urlify()).toEqual("alandonaffenanmaa");
+  });
+
+  test("validEmail", () => {
+    expect(validEmail("foo@bar.local")).toEqual(true);
+    expect(validEmail("foo@local")).toEqual(false);
+  });
+
+  test("validUuid", () => {
+    expect(validUUID(uuid())).toEqual(true);
   });
 });

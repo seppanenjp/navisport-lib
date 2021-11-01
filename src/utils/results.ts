@@ -329,6 +329,8 @@ export const validateControlTimes = (
         lastPunchTime = controlTime.time;
       }
     }
+
+    // TODO: if not controlTime and control is disabled then add controlTime as checked!
   }
   const reader = controlTimes.find(readerControl);
   if (reader) {
@@ -693,7 +695,6 @@ export const calculatePoints = (
 ): void => {
   const ok = getCalculationSystem(system.ok);
   const notOk = getCalculationSystem(system.notOk);
-
   results.forEach((result: Result) => {
     if ([ResultStatus.OK, ResultStatus.MANUAL].includes(result.status)) {
       result.points = ok();
