@@ -1,7 +1,7 @@
 import {
   Control,
   controlLabel,
-  courseClassName,
+  getCourseClassName,
   distanceToControl,
   getCourseClassDistance,
   getCourse,
@@ -48,9 +48,9 @@ describe("Event tests", () => {
     expect(getCourseClassControlAmount([], courseClass)).toEqual(0);
   });
 
-  test("courseClassName", () => {
+  test("getCourseClassName", () => {
     const courseClass = TEST_EVENT.courseClasses[0];
-    expect(courseClassName(TEST_EVENT.courses, courseClass)).toEqual(
+    expect(getCourseClassName(TEST_EVENT.courses, courseClass)).toEqual(
       "A / 3.7km"
     );
   });

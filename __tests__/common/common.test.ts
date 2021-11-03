@@ -1,5 +1,13 @@
 import * as global from "../../src";
-import { uuid, validEmail, validUUID } from "../../src";
+import {
+  hasChanges,
+  uuid,
+  validEmail,
+  validUUID,
+  difference,
+  createRandomString,
+  clone,
+} from "../../src";
 require("../../src");
 
 describe("Common tests", () => {
@@ -64,5 +72,36 @@ describe("Common tests", () => {
 
   test("validUuid", () => {
     expect(validUUID(uuid())).toEqual(true);
+  });
+
+  test("createRandomString", () => {
+    expect(createRandomString(4).length).toEqual(4);
+  });
+
+  test("hasChanges", () => {
+    const testObject = {
+      value: "value",
+    };
+    expect(hasChanges(testObject, { ...testObject, value: "" })).toEqual(true);
+    expect(hasChanges(testObject, { ...testObject })).toEqual(false);
+  });
+
+  test("difference", () => {
+    const testObject = {
+      value: "value",
+    };
+    expect(difference(testObject, { ...testObject, value: "" })).toEqual({
+      value: "value",
+    });
+    expect(difference(testObject, { ...testObject })).toEqual({});
+  });
+
+  test("clone", () => {
+    const testObject = {
+      value: "value",
+    };
+    const testObject2 = testObject;
+    expect(testObject === testObject2).toEqual(true);
+    expect(testObject === clone(testObject2)).toEqual(false);
   });
 });

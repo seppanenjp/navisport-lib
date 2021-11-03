@@ -1,3 +1,12 @@
+import {
+  cloneDeep,
+  isObject,
+  isEqual,
+  transform,
+  pickBy,
+  identity,
+} from "lodash";
+
 export const validUUID = (uuid: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     uuid
@@ -20,3 +29,22 @@ export const createRandomString = (length: number): string => {
     .map(() => (~~(Math.random() * 36)).toString(36))
     .join("");
 };
+
+export const hasChanges = (a: any, b: any): boolean =>
+  !isEqual(pickBy(a, identity), pickBy(b, identity));
+
+export const difference = (a, b) => {
+  const changes = (object, base) => {
+    return transform(object, (result, value, key) => {
+      if (!isEqual(value, base[key])) {
+        result[key] =
+          isObject(value) && isObject(base[key])
+            ? changes(value, base[key])
+            : value;
+      }
+    });
+  };
+  return changes(a, b);
+};
+
+export const clone = <T>(object: T): T => cloneDeep(object);

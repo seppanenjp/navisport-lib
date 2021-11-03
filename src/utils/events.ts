@@ -43,7 +43,7 @@ export const getCourseClassControlAmount = (
 export const controlLabel = (control: Control): string | number | number[] =>
   control.label ? control.label : control.code;
 
-export const courseClassName = (
+export const getCourseClassName = (
   courses: Course[],
   courseClass: CourseClass
 ): string => {
