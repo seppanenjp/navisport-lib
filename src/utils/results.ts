@@ -92,7 +92,10 @@ export const getPenaltyPoints = (
   if (courseClass.penalty && courseClass.type === CourseClassType.ROGAINING) {
     const maxTime = getDuration(courseClass);
     if (result.time > maxTime) {
-      return Math.ceil((result.time - maxTime) / 60) * courseClass.penalty;
+      return (
+        Math.ceil((result.time - maxTime) / 60) * courseClass.penalty +
+        (result.additionalPenalty ? Number(result.additionalPenalty) : 0)
+      );
     }
   }
   return 0;
@@ -108,7 +111,9 @@ export const getResultTime = (
   }
   const penalty =
     60 * getPenaltyFromMissingControls(result, courseClass, course) +
-    (result.additionalPenalty ? 60 * Number(result.additionalPenalty) : 0);
+    (result.additionalPenalty && courseClass.type !== CourseClassType.ROGAINING
+      ? 60 * Number(result.additionalPenalty)
+      : 0);
   if (![ResultStatus.MANUAL].includes(result.status)) {
     const lastPunch: ControlTime =
       result.parsedControlTimes?.find(

@@ -81,6 +81,9 @@ describe("Common tests", () => {
   test("hasChanges", () => {
     const testObject = {
       value: "value",
+      valueObject: {
+        value: "value",
+      },
     };
     expect(hasChanges(testObject, { ...testObject, value: "" })).toEqual(true);
     expect(hasChanges(testObject, { ...testObject })).toEqual(false);
@@ -89,9 +92,24 @@ describe("Common tests", () => {
   test("difference", () => {
     const testObject = {
       value: "value",
+      valueObject: {
+        value: "value",
+      },
     };
     expect(difference(testObject, { ...testObject, value: "" })).toEqual({
       value: "value",
+    });
+    expect(
+      difference(testObject, {
+        ...testObject,
+        valueObject: {
+          value: "",
+        },
+      })
+    ).toEqual({
+      valueObject: {
+        value: "value",
+      },
     });
     expect(difference(testObject, { ...testObject })).toEqual({});
   });

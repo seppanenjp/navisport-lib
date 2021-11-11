@@ -21,6 +21,7 @@ export * from "./models/participant-metadata";
 export * from "./utils/results";
 export * from "./utils/events";
 export * from "./utils/common";
+export * from "./data/countries";
 
 export {};
 
