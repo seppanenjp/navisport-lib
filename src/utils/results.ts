@@ -89,16 +89,18 @@ export const getPenaltyPoints = (
   result: Result,
   courseClass: CourseClass
 ): number => {
-  if (courseClass.penalty && courseClass.type === CourseClassType.ROGAINING) {
-    const maxTime = getDuration(courseClass);
-    if (result.time > maxTime) {
-      return (
-        Math.ceil((result.time - maxTime) / 60) * courseClass.penalty +
-        (result.additionalPenalty ? Number(result.additionalPenalty) : 0)
-      );
-    }
+  const maxTime = getDuration(courseClass);
+  let penaltyPoints = 0;
+  if (result.time > maxTime) {
+    // Penalty points from overtime
+    penaltyPoints =
+      Math.ceil((result.time - maxTime) / 60) * (courseClass.penalty || 0);
   }
-  return 0;
+  // Add additional penalty points
+  return (
+    penaltyPoints +
+    (result.additionalPenalty ? Number(result.additionalPenalty) : 0)
+  );
 };
 
 export const getResultTime = (
@@ -110,9 +112,13 @@ export const getResultTime = (
     return 0;
   }
   const penalty =
-    60 * getPenaltyFromMissingControls(result, courseClass, course) +
+    // Manual can't have penalty from missing controls
+    (result.status !== ResultStatus.MANUAL
+      ? 60 * getPenaltyFromMissingControls(result, courseClass, course)
+      : 0) +
+    // Additional penalty time if class is not Rogaining
     (result.additionalPenalty && courseClass.type !== CourseClassType.ROGAINING
-      ? 60 * Number(result.additionalPenalty)
+      ? Number(result.additionalPenalty)
       : 0);
   if (![ResultStatus.MANUAL].includes(result.status)) {
     const lastPunch: ControlTime =
