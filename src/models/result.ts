@@ -43,7 +43,7 @@ export class Result {
   licenceNumber?: number;
   bibNumber?: number;
   teamId?: string;
-  event: Event;
+  event?: Event;
   eventId: string;
   course?: Course;
   courseId?: string;
@@ -89,7 +89,7 @@ export class Result {
   difference?: number;
 
   // This is only for frontend use
-  syncTime: Date;
+  syncTime?: Date;
 
   constructor() {
     this.resultType = ResultType.INDIVIDUAL;

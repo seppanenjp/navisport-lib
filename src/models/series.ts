@@ -9,13 +9,13 @@ export enum SeriesType {
 export class Series {
   id: string;
   name: string;
-  organisation: Organisation;
+  organisation?: Organisation;
   organisationId: string;
   minExternalBibNumber?: number;
   maxExternalBibNumber?: number;
   seriesType: SeriesType;
   overallResults: boolean;
-  updated: string; // Date;
+  updated?: string; // Date;
   events?: Event[];
 
   constructor() {

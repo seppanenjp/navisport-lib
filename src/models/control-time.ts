@@ -3,7 +3,7 @@ export enum ControlTimeStatus {
 }
 
 export class ControlTime {
-  number: number;
+  number?: number;
   code: number;
   time: number;
   difference?: number;

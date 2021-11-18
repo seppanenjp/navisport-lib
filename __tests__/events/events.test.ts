@@ -1,18 +1,20 @@
 import {
   Control,
   controlLabel,
-  getCourseClassName,
   distanceToControl,
-  getCourseClassDistance,
+  Event,
   getCourse,
   getCourseClass,
   getCourseClassControlAmount,
   getCourseClassCourses,
+  getCourseClassDistance,
+  getCourseClassName,
   getEventName,
   isRastilippuEvent,
 } from "../../src";
 import { TEST_EVENT } from "../../mock/event";
-import { Event } from "../../src";
+import { courseClass1 } from "../../mock/course-class";
+import { course1 } from "../../mock/course";
 
 describe("Event tests", () => {
   test("getEventName", () => {
@@ -25,32 +27,28 @@ describe("Event tests", () => {
   });
 
   test("getCourseClassCourses", () => {
-    const courseClass = TEST_EVENT.courseClasses[0];
     expect(
-      getCourseClassCourses(courseClass, TEST_EVENT.courses).length
+      getCourseClassCourses(courseClass1, TEST_EVENT.courses).length
     ).toEqual(1);
-    expect(getCourseClassCourses(courseClass, []).length).toEqual(0);
+    expect(getCourseClassCourses(courseClass1, []).length).toEqual(0);
     expect(getCourseClassCourses("", TEST_EVENT.courses).length).toEqual(0);
   });
 
   test("getCourseClassDistance", () => {
-    const courseClass = TEST_EVENT.courseClasses[0];
-    expect(getCourseClassDistance(TEST_EVENT.courses, courseClass)).toEqual(
+    expect(getCourseClassDistance(TEST_EVENT.courses, courseClass1)).toEqual(
       3700
     );
   });
 
   test("getCourseClassControlAmount", () => {
-    const courseClass = TEST_EVENT.courseClasses[0];
     expect(
-      getCourseClassControlAmount(TEST_EVENT.courses, courseClass)
+      getCourseClassControlAmount(TEST_EVENT.courses, courseClass1)
     ).toEqual(24);
-    expect(getCourseClassControlAmount([], courseClass)).toEqual(0);
+    expect(getCourseClassControlAmount([], courseClass1)).toEqual(0);
   });
 
   test("getCourseClassName", () => {
-    const courseClass = TEST_EVENT.courseClasses[0];
-    expect(getCourseClassName(TEST_EVENT.courses, courseClass)).toEqual(
+    expect(getCourseClassName(TEST_EVENT.courses, courseClass1)).toEqual(
       "A / 3.7km"
     );
   });
@@ -58,18 +56,19 @@ describe("Event tests", () => {
   test("distanceToControl", () => {
     const controls = TEST_EVENT.courses[0].controls;
     expect(distanceToControl(controls, controls[10])).toEqual(1606);
+    expect(distanceToControl(controls, controls[controls.length + 1])).toEqual(
+      0
+    );
   });
 
   test("getCourseClass", () => {
-    const courseClassId = TEST_EVENT.courseClasses[0].id;
-    expect(getCourseClass(courseClassId, TEST_EVENT.courseClasses)).toEqual(
+    expect(getCourseClass(courseClass1.id, TEST_EVENT.courseClasses)).toEqual(
       TEST_EVENT.courseClasses[0]
     );
   });
 
   test("getCourse", () => {
-    const courseId = TEST_EVENT.courses[0].id;
-    expect(getCourse(courseId, TEST_EVENT.courses)).toEqual(
+    expect(getCourse(course1.id, TEST_EVENT.courses)).toEqual(
       TEST_EVENT.courses[0]
     );
   });

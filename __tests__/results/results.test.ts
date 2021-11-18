@@ -2,30 +2,29 @@ import {
   Control,
   ControlTime,
   CourseClassType,
-  getCourseClassCourses,
   getDuration,
+  getIOFStatus,
+  getMissingControls,
   getPenaltyFromMissingControls,
   getPenaltyPoints,
-  readerControl,
-  validateControlTimes,
-  getIOFStatus,
-  ResultStatus,
-  getMissingControls,
+  getResultTime,
+  getRogainingPoints,
   getStartTime,
-  calculatePoints,
+  PointSystem,
+  readerControl,
+  ResultStatus,
+  validateControlTimes,
+  getTimeOffset,
 } from "../../src";
-import { TEST_EVENT } from "../../mock/event";
+import { courseClass1 } from "../../mock/course-class";
+import { course1, courses } from "../../mock/course";
+import { result1 } from "../../mock/result";
 
 describe("Result tests", () => {
-  const courseClass = TEST_EVENT.courseClasses[0];
-  const course = getCourseClassCourses(courseClass, TEST_EVENT.courses)[0];
-  const result = TEST_EVENT.results.find(
-    (r) => r.classId === courseClass.id && r.courseId === course.id
-  );
   const validControlTimes = validateControlTimes(
-    result,
-    courseClass,
-    course,
+    result1,
+    courseClass1,
+    course1,
     0
   );
   const missingControls = [...validControlTimes].splice(
@@ -55,9 +54,9 @@ describe("Result tests", () => {
     test("No penalty if no missing controls", () => {
       expect(
         getPenaltyFromMissingControls(
-          { ...result, parsedControlTimes: validControlTimes },
-          { ...courseClass, penalty: 10 },
-          course
+          { ...result1, parsedControlTimes: validControlTimes },
+          { ...courseClass1, penalty: 10 },
+          course1
         )
       ).toEqual(0);
     });
@@ -65,9 +64,9 @@ describe("Result tests", () => {
     test("No penalty if courseClass penalty is 0", () => {
       expect(
         getPenaltyFromMissingControls(
-          { ...result, parsedControlTimes: missingControls },
-          courseClass,
-          course
+          { ...result1, parsedControlTimes: missingControls },
+          courseClass1,
+          course1
         )
       ).toEqual(0);
     });
@@ -75,9 +74,9 @@ describe("Result tests", () => {
     test("No penalty if courseClass is Rogaining", () => {
       expect(
         getPenaltyFromMissingControls(
-          { ...result, parsedControlTimes: validControlTimes },
-          { ...courseClass, type: CourseClassType.ROGAINING, penalty: 10 },
-          course
+          { ...result1, parsedControlTimes: validControlTimes },
+          { ...courseClass1, type: CourseClassType.ROGAINING, penalty: 10 },
+          course1
         )
       ).toEqual(0);
     });
@@ -85,9 +84,9 @@ describe("Result tests", () => {
     test("Penalty if courseClass penalty > 0 and missing controls", () => {
       expect(
         getPenaltyFromMissingControls(
-          { ...result, parsedControlTimes: missingControls },
-          { ...courseClass, penalty: 10 },
-          course
+          { ...result1, parsedControlTimes: missingControls },
+          { ...courseClass1, penalty: 10 },
+          course1
         )
       ).toEqual(10);
     });
@@ -95,11 +94,11 @@ describe("Result tests", () => {
     test("Penalty if missing controls and control has penalty", () => {
       expect(
         getPenaltyFromMissingControls(
-          { ...result, parsedControlTimes: missingControls },
-          courseClass,
+          { ...result1, parsedControlTimes: missingControls },
+          courseClass1,
           {
-            ...course,
-            controls: course.controls.map((control: Control) => ({
+            ...course1,
+            controls: course1.controls.map((control: Control) => ({
               ...control,
               penalty: 20,
             })),
@@ -111,13 +110,13 @@ describe("Result tests", () => {
 
   describe("getPenaltyPoints", () => {
     test("No penalty if courseClass is not Rogaining", () => {
-      expect(getPenaltyPoints(result, courseClass)).toEqual(0);
+      expect(getPenaltyPoints(result1, courseClass1)).toEqual(0);
     });
 
     test("No penalty if penalty is 0", () => {
       expect(
-        getPenaltyPoints(result, {
-          ...courseClass,
+        getPenaltyPoints(result1, {
+          ...courseClass1,
           type: CourseClassType.ROGAINING,
         })
       ).toEqual(0);
@@ -126,9 +125,9 @@ describe("Result tests", () => {
     test("No penalty if no overtime", () => {
       expect(
         getPenaltyPoints(
-          { ...result, time: 3000 },
+          { ...result1, time: 3000 },
           {
-            ...courseClass,
+            ...courseClass1,
             type: CourseClassType.ROGAINING,
             penalty: 10,
             duration: 50,
@@ -140,9 +139,9 @@ describe("Result tests", () => {
     test("Penalty no overtime", () => {
       expect(
         getPenaltyPoints(
-          { ...result, time: 3000 },
+          { ...result1, time: 3000 },
           {
-            ...courseClass,
+            ...courseClass1,
             type: CourseClassType.ROGAINING,
             penalty: 10,
             duration: 49,
@@ -163,19 +162,19 @@ describe("Result tests", () => {
   });
 
   test("getMissingControls", () => {
-    expect(getMissingControls(result, TEST_EVENT.courses).length).toEqual(0);
+    expect(getMissingControls(result1, courses).length).toEqual(0);
 
     expect(
       getMissingControls(
-        { ...result, parsedControlTimes: validControlTimes },
-        TEST_EVENT.courses
+        { ...result1, parsedControlTimes: validControlTimes },
+        courses
       ).length
     ).toEqual(0);
 
     expect(
       getMissingControls(
-        { ...result, parsedControlTimes: missingControls },
-        TEST_EVENT.courses
+        { ...result1, parsedControlTimes: missingControls },
+        courses
       ).length
     ).toEqual(1);
   });
@@ -184,25 +183,94 @@ describe("Result tests", () => {
     const resultStartTime = "2021-01-01T10:00:00Z";
     const courseClassStartTime = "2021-01-01T12:00:00Z";
 
-    expect(getStartTime(result, courseClass)).toEqual("");
+    expect(getStartTime(result1, courseClass1)).toEqual("");
 
     expect(
-      getStartTime({ ...result, startTime: resultStartTime }, courseClass)
+      getStartTime({ ...result1, startTime: resultStartTime }, courseClass1)
     ).toEqual(resultStartTime);
 
     expect(
-      getStartTime(result, {
-        ...courseClass,
+      getStartTime(result1, {
+        ...courseClass1,
         massStartTime: courseClassStartTime,
       })
     ).toEqual(courseClassStartTime);
 
     expect(
       getStartTime(
-        { ...result, startTime: resultStartTime },
-        { ...courseClass, massStartTime: courseClassStartTime }
+        { ...result1, startTime: resultStartTime },
+        { ...courseClass1, massStartTime: courseClassStartTime }
       )
     ).toEqual(courseClassStartTime);
+  });
+
+  test("getRogainingPoints", () => {
+    expect(
+      getRogainingPoints(
+        result1.controlTimes,
+        course1.controls,
+        PointSystem.NO_SYSTEM
+      )
+    ).toEqual(0);
+
+    expect(
+      getRogainingPoints(
+        result1.controlTimes,
+        course1.controls,
+        PointSystem.FIRST_CODE
+      )
+    ).toEqual(101);
+
+    expect(
+      getRogainingPoints(
+        result1.controlTimes,
+        course1.controls,
+        PointSystem.LAST_CODE
+      )
+    ).toEqual(105);
+
+    expect(
+      getRogainingPoints(
+        result1.controlTimes,
+        course1.controls,
+        PointSystem.ONE_POINT
+      )
+    ).toEqual(24);
+  });
+
+  test("getResultTime", () => {
+    expect(getResultTime(result1, courseClass1, course1)).toEqual(1526);
+    expect(
+      getResultTime(
+        { ...result1, additionalPenalty: 10 },
+        courseClass1,
+        course1
+      )
+    ).toEqual(1536);
+    expect(
+      getResultTime(
+        { ...result1, status: ResultStatus.NOTIME },
+        courseClass1,
+        course1
+      )
+    ).toEqual(0);
+    expect(
+      getResultTime(
+        { ...result1, status: ResultStatus.DNS },
+        courseClass1,
+        course1
+      )
+    ).toEqual(0);
+  });
+
+  test("getTimeOffset", () => {
+    expect(getTimeOffset(result1, courseClass1)).toEqual(0);
+    expect(
+      getTimeOffset(
+        { ...result1, startTime: result1.registerTime },
+        courseClass1
+      )
+    ).toEqual(-154);
   });
 
   /*  test("calculatePoints", () => {
