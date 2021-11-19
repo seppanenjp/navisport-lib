@@ -1,7 +1,10 @@
 import {
+  checkedControlTime,
   Control,
   ControlTime,
+  ControlTimeStatus,
   CourseClassType,
+  formatResultTime,
   getDuration,
   getIOFStatus,
   getMissingControls,
@@ -10,15 +13,17 @@ import {
   getResultTime,
   getRogainingPoints,
   getStartTime,
+  getTimeOffset,
   PointSystem,
   readerControl,
   ResultStatus,
   validateControlTimes,
-  getTimeOffset,
+  getStatusWeight,
 } from "../../src";
 import { courseClass1 } from "../../mock/course-class";
 import { course1, courses } from "../../mock/course";
 import { result1 } from "../../mock/result";
+import { last } from "lodash";
 
 describe("Result tests", () => {
   const validControlTimes = validateControlTimes(
@@ -273,6 +278,49 @@ describe("Result tests", () => {
     ).toEqual(-154);
   });
 
+  test("readerControl", () => {
+    expect(result1.controlTimes.find(readerControl)).toEqual(
+      last(result1.controlTimes)
+    );
+  });
+
+  test("checkedControlTime", () => {
+    const checked: ControlTime = {
+      code: 999,
+      time: 10,
+      status: ControlTimeStatus.CHECKED,
+    };
+
+    const checked2: ControlTime = {
+      code: 999,
+      time: -1,
+    };
+
+    expect([...result1.controlTimes, checked].find(checkedControlTime)).toEqual(
+      checked
+    );
+    expect(
+      [...result1.controlTimes, checked2].find(checkedControlTime)
+    ).toEqual(checked2);
+  });
+
+  test("formatResultTime", () => {
+    expect(formatResultTime(result1)).toEqual("22:43");
+    expect(
+      formatResultTime({ ...result1, status: ResultStatus.NOTIME })
+    ).toEqual("-");
+    expect(formatResultTime({ ...result1, time: null })).toEqual("-");
+  });
+
+  test("getStatusWeight", () => {
+    expect(getStatusWeight(ResultStatus.OK)).toEqual(1);
+    expect(getStatusWeight(ResultStatus.DSQ)).toEqual(2);
+    expect(getStatusWeight(ResultStatus.DNF)).toEqual(3);
+    expect(getStatusWeight(ResultStatus.NOTIME)).toEqual(4);
+    expect(getStatusWeight(ResultStatus.MANUAL)).toEqual(1);
+    expect(getStatusWeight(ResultStatus.DNS)).toEqual(5);
+    expect(getStatusWeight("Foo" as ResultStatus)).toEqual(6);
+  });
   /*  test("calculatePoints", () => {
     calculatePoints(TEST_EVENT.results.splice(0, 5), {
       ok:

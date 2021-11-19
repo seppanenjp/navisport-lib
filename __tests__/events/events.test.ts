@@ -63,14 +63,12 @@ describe("Event tests", () => {
 
   test("getCourseClass", () => {
     expect(getCourseClass(courseClass1.id, TEST_EVENT.courseClasses)).toEqual(
-      TEST_EVENT.courseClasses[0]
+      courseClass1
     );
   });
 
   test("getCourse", () => {
-    expect(getCourse(course1.id, TEST_EVENT.courses)).toEqual(
-      TEST_EVENT.courses[0]
-    );
+    expect(getCourse(course1.id, TEST_EVENT.courses)).toEqual(course1);
   });
 
   test("controlLabel", () => {
