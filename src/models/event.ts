@@ -86,6 +86,7 @@ export class Event {
   devices?: Device[];
   passings?: Passing[];
   paymentCategories?: PaymentCategory[];
+  private: boolean = false;
   updated?: string; // Date;
 
   constructor() {

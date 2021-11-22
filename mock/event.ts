@@ -38,6 +38,7 @@ export const TEST_EVENT: Event = {
   organisationId: "",
   sport: Sport.ORIENTEERING,
   state: EventState.COMPLETE,
+  private: false,
   series,
   courseClasses,
   courses,

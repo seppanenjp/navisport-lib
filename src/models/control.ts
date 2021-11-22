@@ -8,6 +8,7 @@ export class Control {
   latitude?: number;
   longitude?: number;
   penalty?: number;
+  disabled?: boolean;
 
   constructor(
     code: number,

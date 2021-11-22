@@ -339,9 +339,19 @@ export const validateControlTimes = (
         controlTime.time -= skipTime;
         lastPunchTime = controlTime.time;
       }
+    } else {
+      // If not controlTime and control is disabled then add controlTime as checked!
+      if (control.disabled) {
+        controlTimes.push({
+          ...new ControlTime(
+            Array.isArray(control.code) ? control.code[0] : control.code,
+            0,
+            control.number
+          ),
+          status: ControlTimeStatus.CHECKED,
+        });
+      }
     }
-
-    // TODO: if not controlTime and control is disabled then add controlTime as checked!
   }
   const reader = controlTimes.find(readerControl);
   if (reader) {
