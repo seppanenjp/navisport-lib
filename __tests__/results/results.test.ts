@@ -32,10 +32,52 @@ describe("Result tests", () => {
     course1,
     0
   );
+
+  // Missing first control
   const missingControls = [...validControlTimes].splice(
-    0,
-    validControlTimes.length - 2
+    1,
+    validControlTimes.length
   );
+
+  describe("validateControlTimes", () => {
+    test("All punched controls should have correct number", () => {
+      expect(
+        validControlTimes.filter((controlTime: ControlTime) =>
+          Boolean(controlTime.number)
+        ).length
+      ).toEqual(course1.controls.length);
+      expect(validControlTimes[validControlTimes.length - 2].number).toEqual(
+        course1.controls.length
+      );
+
+      expect(
+        validControlTimes.filter((controlTime: ControlTime) =>
+          Boolean(controlTime.number)
+        ).length
+      ).toEqual(course1.controls.length);
+
+      expect(missingControls[0].number).toEqual(2);
+    });
+
+    test("Validate all controls if Rogaining", () => {
+      const rogainingClass = {
+        ...courseClass1,
+        type: CourseClassType.ROGAINING,
+      };
+
+      // expect(validateControlTimes(result1, course1, rogainingClass))
+    });
+
+    test("Works with checked control times", () => {});
+
+    test("Works with freeOrder", () => {});
+
+    test("Works with skip controls", () => {});
+
+    test("Control times should have correct offset times", () => {});
+
+    // TODO: much more tests here!
+  });
 
   test("readerControl", () => {
     expect(readerControl(new ControlTime(31, 100))).toEqual(false);
@@ -302,6 +344,8 @@ describe("Result tests", () => {
     expect(
       [...result1.controlTimes, checked2].find(checkedControlTime)
     ).toEqual(checked2);
+
+    expect(checkedControlTime(undefined)).toEqual(false);
   });
 
   test("formatResultTime", () => {

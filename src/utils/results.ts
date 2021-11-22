@@ -310,13 +310,13 @@ export const validateControlTimes = (
   const controlTimes = cloneDeep(result.controlTimes);
   let lastPunchTime: number = 0;
   for (const [index, control] of course.controls.entries()) {
-    const isLast: boolean = index === course.controls.length - 1;
+    // const isLast: boolean = index === course.controls.length - 1;
     const controlTime = controlTimes.find(
       (ct) =>
         !Boolean(ct.number) &&
         checkControlCode(ct.code, control.code) &&
         (courseClass.type !== CourseClassType.NOT_SPECIFIED ||
-          isLast ||
+          // isLast || // This takes first "last" control if multiple found (is wrong then?)
           ct.time > lastPunchTime + skipTime + offset ||
           checkedControlTime(ct))
     );
@@ -491,9 +491,9 @@ export const checkControlCode = (
   punchCode: number,
   controlCode: number | number[]
 ): boolean =>
-  Number(punchCode) === Number(controlCode) ||
-  (Array.isArray(controlCode) &&
-    controlCode.map(Number).includes(Number(punchCode)));
+  Array.isArray(controlCode)
+    ? controlCode.map(Number).includes(Number(punchCode))
+    : Number(punchCode) === Number(controlCode);
 
 export const getMissingControls = (
   result: Result,
