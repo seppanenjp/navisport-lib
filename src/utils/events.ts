@@ -1,10 +1,12 @@
 import { CourseClass } from "../models/course-class";
 import { Course } from "../models/course";
 import { Control } from "../models/control";
-import { Event } from "../models/event";
 
-export const isRastilippuEvent = (event: Event): boolean =>
-  Boolean(event.externalApplication === "Rastilippu");
+export const isRastilippuEvent = ({
+  externalApplication,
+}: {
+  externalApplication?: string | undefined;
+}): boolean => Boolean(externalApplication === "Rastilippu");
 
 export const getEventName = ({
   name,

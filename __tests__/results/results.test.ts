@@ -13,12 +13,13 @@ import {
   getResultTime,
   getRogainingPoints,
   getStartTime,
+  getStatusWeight,
   getTimeOffset,
   PointSystem,
   readerControl,
   ResultStatus,
   validateControlTimes,
-  getStatusWeight,
+  clone,
 } from "../../src";
 import { courseClass1 } from "../../mock/course-class";
 import { course1, courses } from "../../mock/course";
@@ -59,22 +60,108 @@ describe("Result tests", () => {
       expect(missingControls[0].number).toEqual(2);
     });
 
-    test("Validate all controls if Rogaining", () => {
+    /*test("Validate all controls if Rogaining", () => {
       const rogainingClass = {
         ...courseClass1,
         type: CourseClassType.ROGAINING,
       };
 
       // expect(validateControlTimes(result1, course1, rogainingClass))
+    });*/
+
+    test("Checked control times have correct number", () => {
+      const controlTimes = clone(result1.controlTimes);
+      controlTimes[4].status = ControlTimeStatus.CHECKED;
+      controlTimes[4].time = 0;
+
+      const checkedControlTimes = validateControlTimes(
+        { ...result1, controlTimes },
+        courseClass1,
+        course1,
+        0
+      );
+
+      expect(
+        checkedControlTimes.filter((controlTime: ControlTime) =>
+          Boolean(controlTime.number)
+        ).length
+      ).toEqual(course1.controls.length);
+
+      expect(checkedControlTimes[4].number).toEqual(5);
     });
 
-    test("Works with checked control times", () => {});
+    test("Controls with freeOrder are validated correctly", () => {
+      const controls = clone(course1.controls);
+      controls[2].freeOrder = true;
+      controls[3].freeOrder = true;
 
-    test("Works with freeOrder", () => {});
+      // Swap controls
+      [controls[2], controls[3]] = [controls[3], controls[2]];
 
-    test("Works with skip controls", () => {});
+      const validControlTimesWithFreeOrder = validateControlTimes(
+        result1,
+        courseClass1,
+        { ...course1, controls },
+        0
+      ).filter((controlTime: ControlTime) => Boolean(controlTime.number));
 
-    test("Control times should have correct offset times", () => {});
+      expect(
+        validControlTimesWithFreeOrder.filter((controlTime: ControlTime) =>
+          Boolean(controlTime.number)
+        ).length
+      ).toEqual(course1.controls.length);
+
+      expect(validControlTimesWithFreeOrder[2].number).toEqual(4);
+      expect(validControlTimesWithFreeOrder[3].number).toEqual(3);
+    });
+
+    test("Controls with skip should reduce control times", () => {
+      const controls = clone(course1.controls);
+      controls[2].skip = true;
+      controls[3].skip = true;
+
+      const validControlTimesWithSkip = validateControlTimes(
+        result1,
+        courseClass1,
+        { ...course1, controls },
+        0
+      );
+
+      expect(validControlTimes[2].split.time).toEqual(33);
+      expect(validControlTimes[3].split.time).toEqual(50);
+
+      expect(validControlTimesWithSkip[2].split.time).toEqual(0);
+      expect(validControlTimesWithSkip[3].split.time).toEqual(0);
+
+      expect(validControlTimes[4].time).toEqual(265);
+      expect(validControlTimes[4].split.time).toEqual(
+        validControlTimes[4].time - validControlTimes[3].time
+      );
+
+      expect(validControlTimesWithSkip[4].time).toEqual(182);
+      expect(validControlTimesWithSkip[4].split.time).toEqual(
+        // Split should be calculated from 1 to 4 since we skip 2 and 3
+        validControlTimesWithSkip[4].time - validControlTimesWithSkip[1].time
+      );
+    });
+
+    test("Control times should have correct offset times", () => {
+      const validControlTimesWithOffset = validateControlTimes(
+        result1,
+        courseClass1,
+        course1,
+        100
+      );
+      expect(
+        validControlTimes[3].time - validControlTimesWithOffset[3].time
+      ).toEqual(100);
+
+      // Even offset time changes split times should be same as without offset
+      expect(
+        validControlTimes[3].split.time -
+          validControlTimesWithOffset[3].split.time
+      ).toEqual(0);
+    });
 
     // TODO: much more tests here!
   });
