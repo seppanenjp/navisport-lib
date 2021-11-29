@@ -6,7 +6,6 @@ import {
   CourseClassType,
   formatResultTime,
   getDuration,
-  getIOFStatus,
   getMissingControls,
   getPenaltyFromMissingControls,
   getPenaltyPoints,
@@ -163,7 +162,35 @@ describe("Result tests", () => {
       ).toEqual(0);
     });
 
-    // TODO: much more tests here!
+    test("Should be valid with disabled control", () => {
+      const controls = clone(course1.controls);
+      const controlTimes = [...result1.controlTimes].splice(
+        1,
+        result1.controlTimes.length
+      );
+      controls[0].disabled = true;
+
+      const controlTimesWithDisabledControl = validateControlTimes(
+        { ...result1, controlTimes },
+        courseClass1,
+        {
+          ...course1,
+          controls,
+        },
+        0
+      );
+      expect(
+        controlTimesWithDisabledControl.filter((controlTime: ControlTime) =>
+          Boolean(controlTime.number)
+        ).length
+      ).toEqual(course1.controls.length);
+
+      expect(
+        controlTimesWithDisabledControl.find(
+          (controlTime: ControlTime) => controlTime.code === controls[0].code
+        )
+      ).toBeDefined();
+    });
   });
 
   test("readerControl", () => {
@@ -283,16 +310,6 @@ describe("Result tests", () => {
         )
       ).toEqual(10);
     });
-  });
-
-  test("getIOFStatus", () => {
-    expect(getIOFStatus(ResultStatus.OK)).toEqual("OK");
-    expect(getIOFStatus(ResultStatus.DSQ)).toEqual("Disqualified");
-    expect(getIOFStatus(ResultStatus.DNF)).toEqual("DidNotFinish");
-    expect(getIOFStatus(ResultStatus.NOTIME)).toEqual("NotCompeting");
-    expect(getIOFStatus(ResultStatus.MANUAL)).toEqual("NotCompeting");
-    expect(getIOFStatus(ResultStatus.DNS)).toEqual("NotCompeting");
-    expect(getIOFStatus("Foo" as ResultStatus)).toEqual("Inactive");
   });
 
   test("getMissingControls", () => {

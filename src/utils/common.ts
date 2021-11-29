@@ -24,18 +24,15 @@ export const uuid = (): string =>
     return v.toString(16);
   });
 
-export const createRandomString = (length: number): string => {
-  return [...Array(length)]
-    .map(() => (~~(Math.random() * 36)).toString(36))
-    .join("");
-};
+export const createRandomString = (length: number): string =>
+  [...Array(length)].map(() => (~~(Math.random() * 36)).toString(36)).join("");
 
 export const hasChanges = (a: any, b: any): boolean =>
   !isEqual(pickBy(a, identity), pickBy(b, identity));
 
 export const difference = (a, b) => {
-  const changes = (object, base) => {
-    return transform(object, (result, value, key) => {
+  const changes = (object, base) =>
+    transform(object, (result, value, key) => {
       if (!isEqual(value, base[key])) {
         result[key] =
           isObject(value) && isObject(base[key])
@@ -43,7 +40,6 @@ export const difference = (a, b) => {
             : value;
       }
     });
-  };
   return changes(a, b);
 };
 

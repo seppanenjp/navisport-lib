@@ -346,7 +346,7 @@ export const validateControlTimes = (
           ...new ControlTime(
             Array.isArray(control.code) ? control.code[0] : control.code,
             0,
-            control.number
+            index + 1
           ),
           status: ControlTimeStatus.CHECKED,
         });
@@ -381,15 +381,18 @@ export const resultsWithTimeAndPosition = (
           );
           courseResults.forEach((result: Result) => {
             if (result.status !== ResultStatus.REGISTERED) {
+              // TODO: return result insted of modify
               parseResult(result, courseClass, course);
             }
           });
           if (controlPositions) {
+            // TODO: return result insted of modify
             setControlPositions(courseResults, course);
           }
         });
       if (checkpointPositions && courseClass.checkpoints) {
         courseClass.checkpoints.forEach((checkPoint: Checkpoint) =>
+          // TODO: return result insted of modify
           setCheckpointPositions(classResults, checkPoint)
         );
       }
@@ -522,25 +525,6 @@ export const getMissingControls = (
     }
   }
   return missing;
-};
-
-export const getIOFStatus = (status: ResultStatus): string => {
-  switch (status) {
-    case ResultStatus.OK:
-      return "OK";
-    case ResultStatus.DSQ:
-      return "Disqualified";
-    case ResultStatus.DNF:
-      return "DidNotFinish";
-    case ResultStatus.NOTIME:
-      return "NotCompeting";
-    case ResultStatus.MANUAL:
-      return "NotCompeting";
-    case ResultStatus.DNS:
-      return "NotCompeting";
-    default:
-      return "Inactive";
-  }
 };
 
 export const getStartTime = (

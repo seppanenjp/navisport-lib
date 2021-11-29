@@ -88,9 +88,6 @@ export class Result {
   parsedControlTimes?: ControlTime[];
   difference?: number;
 
-  // This is only for frontend use
-  syncTime?: Date;
-
   constructor() {
     this.resultType = ResultType.INDIVIDUAL;
     this.status = ResultStatus.REGISTERED;
