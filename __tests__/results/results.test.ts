@@ -19,11 +19,13 @@ import {
   ResultStatus,
   validateControlTimes,
   clone,
+  calculatePoints,
 } from "../../src";
 import { courseClass1 } from "../../mock/course-class";
 import { course1, courses } from "../../mock/course";
 import { result1 } from "../../mock/result";
 import { last } from "lodash";
+import { TEST_EVENT } from "../../mock/event";
 
 describe("Result tests", () => {
   const validControlTimes = validateControlTimes(
@@ -469,11 +471,13 @@ describe("Result tests", () => {
     expect(getStatusWeight(ResultStatus.DNS)).toEqual(5);
     expect(getStatusWeight("Foo" as ResultStatus)).toEqual(6);
   });
-  /*  test("calculatePoints", () => {
-    calculatePoints(TEST_EVENT.results.splice(0, 5), {
+  test("calculatePoints", () => {
+    calculatePoints(TEST_EVENT.results, {
       ok:
         "1000 - (([RESULT].time - [FIRST_RESULT].time) / [FIRST_RESULT].time) * 1000",
       notOk: "1",
     });
-  });*/
+    expect(TEST_EVENT.results[0].points).toEqual(1000);
+    expect(TEST_EVENT.results[1].points).toEqual(853);
+  });
 });

@@ -145,6 +145,7 @@ export const getResultTime = (
   return 0;
 };
 
+// TODO: save with result so no need to calculate again
 export const getTimeOffset = (
   result: Result,
   courseClass: CourseClass
@@ -379,6 +380,15 @@ export const resultsWithTimeAndPosition = (
           const courseResults = classResults.filter(
             (result: Result) => result.courseId === course.id
           );
+          // Use default course if no course selected and class have only one course
+          if (courseClass.courseIds.length === 1) {
+            classResults
+              .filter((result: Result) => !Boolean(result.courseId))
+              .forEach(
+                (result: Result) => (result.courseId = courseClass.courseIds[0])
+              );
+          }
+
           courseResults.forEach((result: Result) => {
             if (result.status !== ResultStatus.REGISTERED) {
               // TODO: return result insted of modify
@@ -701,21 +711,26 @@ export const calculatePoints = (
   const ok = getCalculationSystem(system.ok);
   const notOk = getCalculationSystem(system.notOk);
   results.forEach((result: Result) => {
-    if ([ResultStatus.OK, ResultStatus.MANUAL].includes(result.status)) {
-      result.points = ok();
-    } else if (result.status !== ResultStatus.REGISTERED) {
-      result.points = notOk();
+    if (
+      [ResultStatus.OK, ResultStatus.MANUAL].includes(result.status) &&
+      system.ok
+    ) {
+      ok(results, result);
+    } else if (result.status !== ResultStatus.REGISTERED && system.notOk) {
+      notOk(results, result);
     } else {
       result.points = null;
     }
   });
 };
 
-const getCalculationSystem = (systemString: string): (() => number) =>
-  eval(
+const getCalculationSystem = (systemString: string): Function =>
+  Function(
+    "results",
+    "result",
     systemString
-      ? systemString
+      ? `result.points = Math.round(${systemString
           .replace(/\[FIRST_RESULT]/g, "results[0]")
-          .replace(/\[RESULT]/g, "result")
+          .replace(/\[RESULT]/g, "result")})`
       : null
   );
