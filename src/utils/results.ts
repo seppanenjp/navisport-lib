@@ -262,8 +262,11 @@ export const parseResult = (
   // Set result points
   result.points = 0;
   if (courseClass.type === CourseClassType.ROGAINING && result.time) {
+    // Check only punched controls as parsedControlTimes contains also controls that does not belong to course
     result.points = getRogainingPoints(
-      result.parsedControlTimes,
+      result.parsedControlTimes.filter(
+        (controlTime: ControlTime) => controlTime.number
+      ),
       course.controls,
       courseClass.pointSystem
     );
@@ -298,8 +301,13 @@ export const getResultPositionAndDifference = (
   };
 };
 
-export const clearControlNumbers = (controlTimes: ControlTime[]) =>
-  controlTimes.forEach((controlTime: ControlTime) => delete controlTime.number);
+export const clearControlNumbers = (
+  controlTimes: ControlTime[]
+): ControlTime[] =>
+  controlTimes.map((controlTime: ControlTime) => ({
+    ...controlTime,
+    number: undefined,
+  }));
 
 export const validateControlTimes = (
   result: Result,
@@ -440,7 +448,7 @@ export const getRogainingPoints = (
       (Array.isArray(lastControl) && lastControl.includes(control.code))
   );
   if (index >= 0) {
-    // Remove last control if punched..
+    // Remove last control if punched
     controlTimes.splice(index, 1);
   }
   return controlTimes.length
@@ -700,8 +708,8 @@ const passingSort = (firstResult: Result, secondResult: Result): number => {
 };
 
 interface CalculationSystem {
-  ok: string;
-  notOk: string;
+  ok?: string;
+  notOk?: string;
 }
 
 export const calculatePoints = (

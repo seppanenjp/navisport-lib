@@ -20,6 +20,7 @@ import {
   validateControlTimes,
   clone,
   calculatePoints,
+  clearControlNumbers,
 } from "../../src";
 import { courseClass1 } from "../../mock/course-class";
 import { course1, courses } from "../../mock/course";
@@ -312,6 +313,18 @@ describe("Result tests", () => {
         )
       ).toEqual(10);
     });
+
+    test("Additional penalty", () => {
+      expect(
+        getPenaltyPoints(
+          { ...result1, additionalPenalty: 10 },
+          {
+            ...courseClass1,
+            penalty: undefined,
+          }
+        )
+      ).toEqual(10);
+    });
   });
 
   test("getMissingControls", () => {
@@ -385,6 +398,15 @@ describe("Result tests", () => {
     expect(
       getRogainingPoints(
         result1.controlTimes,
+        course1.controls,
+        PointSystem.ONE_POINT
+      )
+    ).toEqual(24);
+
+    // Should work when punched same control again and course does not have same control two times
+    expect(
+      getRogainingPoints(
+        [...result1.controlTimes, result1.controlTimes[0]],
         course1.controls,
         PointSystem.ONE_POINT
       )
@@ -471,6 +493,7 @@ describe("Result tests", () => {
     expect(getStatusWeight(ResultStatus.DNS)).toEqual(5);
     expect(getStatusWeight("Foo" as ResultStatus)).toEqual(6);
   });
+
   test("calculatePoints", () => {
     calculatePoints(TEST_EVENT.results, {
       ok:
@@ -479,5 +502,11 @@ describe("Result tests", () => {
     });
     expect(TEST_EVENT.results[0].points).toEqual(1000);
     expect(TEST_EVENT.results[1].points).toEqual(853);
+    expect(TEST_EVENT.results[2].points).toEqual(1);
+
+    calculatePoints(TEST_EVENT.results, {});
+    expect(TEST_EVENT.results[2].points).toEqual(null);
   });
+
+  test("clearControlNumbers", () => {});
 });

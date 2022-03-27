@@ -200,4 +200,41 @@ export const result2: Result = {
   updated: "2020-07-27T15:00:00.000Z",
 };
 
-export const results: Result[] = [result1, result2];
+export const result3: Result = {
+  id: "TEST_ID_3",
+  name: "Testaaja Tomppa",
+  seriesId: null,
+  bibNumber: null,
+  club: "Testiseura 3",
+  teamId: null,
+  eventId: "37ba302c-0146-44e8-b88a-0860630b5e4d",
+  courseId: "eba4c981-e695-4b2e-bfb5-37419bdd043a",
+  classId: "a6506e3b-2485-4bf4-b891-0a1526d43116",
+  leg: null,
+  chip: "250221",
+  registerTime: "2020-07-27T09:15:24.833Z",
+  readTime: "2020-07-27T09:42:51.518Z",
+  startTime: null,
+  controlTimes: [
+    { code: 56, time: 62 },
+    {
+      code: 250,
+      time: 1372,
+    },
+  ],
+  municipality: null,
+  nationality: "NOR",
+  additionalPenalty: null,
+  status: ResultStatus.DSQ,
+  registered: true,
+  time: 1263,
+  position: 3,
+  points: 0,
+  resultType: ResultType.INDIVIDUAL,
+  private: false,
+  gender: Gender.NOT_SPECIFIED,
+  paymentState: PaymentState.NOT_PAID,
+  updated: "2020-07-27T15:00:00.000Z",
+};
+
+export const results: Result[] = [result1, result2, result3];
