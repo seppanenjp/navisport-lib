@@ -11,6 +11,7 @@ export const courseClass1: CourseClass = {
   penalty: null,
   duration: null,
   updated: "2021-05-28T10:42:36.779Z",
+  stages: [],
 };
 
 export const courseClass2: CourseClass = {
@@ -25,5 +26,6 @@ export const courseClass2: CourseClass = {
   penalty: null,
   duration: null,
   updated: "2021-05-28T10:42:36.779Z",
+  stages: [],
 };
 export const courseClasses: CourseClass[] = [courseClass1, courseClass2];

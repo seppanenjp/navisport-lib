@@ -23,7 +23,7 @@ export enum Classification {
   REGIONAL = "Regional",
   LOCAL = "Local",
   VIRTUAL = "Virtual",
-  CLUB = "Club",
+  PRIVATE = "Private",
 }
 
 export enum RaceType {

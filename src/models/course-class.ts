@@ -1,6 +1,7 @@
 import { Course } from "./course";
 import { Checkpoint } from "./checkpoint";
 import { Result } from "./result";
+import { uuid } from "../utils/common";
 
 export enum CourseClassType {
   NOT_SPECIFIED = "Not specified",
@@ -41,12 +42,15 @@ export class CourseClass {
   duration?: number;
   results?: Result[];
   courses?: Course[];
+  stages: CourseClassStage[];
   updated?: string; // Date;
 
   constructor(name = "Uusi sarja") {
+    this.id = uuid();
     this.name = name;
     this.pointSystem = PointSystem.NO_SYSTEM;
     this.type = CourseClassType.NOT_SPECIFIED;
     this.courseIds = [];
+    this.stages = [];
   }
 }
