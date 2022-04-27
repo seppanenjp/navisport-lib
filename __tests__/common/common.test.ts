@@ -12,11 +12,16 @@ require("../../src");
 
 describe("Common tests", () => {
   test("Array add", () => {
-    const arr = [];
     const item = { a: 1, b: 2 };
-    expect(arr.add(item).length).toEqual(1);
+    const arr = [item];
     // Add twice should check if already exists
     expect(arr.add(item).length).toEqual(1);
+    // Check that item is replaced with correct id property
+    expect(arr.add({ ...item, b: 3 }, "a").length).toEqual(1);
+    // Different object with different id property
+    expect(arr.add({ a: 2, b: 4 }, "a").length).toEqual(2);
+    // Should add item if idProperty is not defined correctly
+    expect(arr.add({ ...item, b: 3 }, "c").length).toEqual(2);
   });
 
   test("Array remove", () => {
@@ -24,6 +29,7 @@ describe("Common tests", () => {
     const arr = [item];
 
     expect([...arr].remove(item).length).toEqual(0);
+    expect([...arr].remove(item.a, "a").length).toEqual(0);
   });
 
   test("Array extend", () => {
@@ -72,10 +78,12 @@ describe("Common tests", () => {
 
   test("validUuid", () => {
     expect(validUUID(uuid())).toEqual(true);
+    expect(validUUID("12412-4124-124-24-2124")).toEqual(false);
   });
 
   test("createRandomString", () => {
     expect(createRandomString(4).length).toEqual(4);
+    expect(createRandomString(10)).not.toEqual(createRandomString(10));
   });
 
   test("hasChanges", () => {

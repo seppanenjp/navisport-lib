@@ -421,7 +421,7 @@ describe("Result tests", () => {
         courseClass1,
         course1
       )
-    ).toEqual(1536);
+    ).toEqual(2126);
     expect(
       getResultTime(
         { ...result1, status: ResultStatus.NOTIME },
@@ -496,8 +496,7 @@ describe("Result tests", () => {
 
   test("calculatePoints", () => {
     calculatePoints(TEST_EVENT.results, {
-      ok:
-        "1000 - (([RESULT].time - [FIRST_RESULT].time) / [FIRST_RESULT].time) * 1000",
+      ok: "1000 - (([RESULT].time - [FIRST_RESULT].time) / [FIRST_RESULT].time) * 1000",
       notOk: "1",
     });
     expect(TEST_EVENT.results[0].points).toEqual(1000);

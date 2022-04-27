@@ -27,8 +27,8 @@ export {};
 
 declare global {
   interface Array<T> {
-    add(item: any | any[], idProperty?: string): Array<T>;
-    remove(item: any, idProperty?: string): Array<T>;
+    add(item: T | T[], idProperty?: string): Array<T>;
+    remove(item: T | string, idProperty?: string): Array<T>;
     extend(items: any[]): void;
   }
 
@@ -43,33 +43,34 @@ declare global {
   }
 }
 
-Array.prototype.add = function (items, idProperty = "id") {
-  let _self = [...this];
-  if (!_self) {
-    return _self;
-  }
-  if (!Array.isArray(items)) {
-    items = [items];
-  }
-  items.forEach((item) => {
-    _self = _self.remove(item, idProperty);
-    _self.push(item);
+Array.prototype.add = function <T>(items: T | T[], idProperty = "id") {
+  const _self = [...this];
+  (Array.isArray(items) ? items : [items]).forEach((item: T) => {
+    const idx = _self.findIndex(
+      (it) =>
+        (it[idProperty] && // Check that item id property is not undefined
+          item[idProperty] &&
+          it[idProperty] === item[idProperty]) ||
+        it === item
+    );
+    idx !== -1 ? (_self[idx] = item) : _self.push(item);
   });
-  return _self;
+  return _self; // [...new Map(_self.map((v) => [v[idProperty], v])).values()];
 };
 
-Array.prototype.remove = function (item, idProperty = "id") {
-  return (this as Array<any>)?.filter(
-    (i) =>
+Array.prototype.remove = function <T>(item, idProperty = "id") {
+  return [...this].filter(
+    (it: T) =>
       !(
-        i === item ||
-        (i[idProperty] &&
-          i[idProperty] ===
+        it === item ||
+        (it[idProperty] &&
+          it[idProperty] ===
             (typeof item === "string" ? item : item[idProperty]))
       )
   );
 };
 
+// TODO: remove this
 Array.prototype.extend = function (items = []) {
   items.forEach((item) => this.push(item));
 };

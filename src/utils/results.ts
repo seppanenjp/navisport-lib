@@ -118,7 +118,7 @@ export const getResultTime = (
       : 0) +
     // Additional penalty time if class is not Rogaining
     (result.additionalPenalty && courseClass.type !== CourseClassType.ROGAINING
-      ? Number(result.additionalPenalty)
+      ? Number(result.additionalPenalty) * 60
       : 0);
   if (![ResultStatus.MANUAL].includes(result.status)) {
     const lastPunch: ControlTime =
@@ -264,7 +264,7 @@ export const parseResult = (
   if (courseClass.type === CourseClassType.ROGAINING && result.time) {
     // Check only punched controls as parsedControlTimes contains also controls that does not belong to course
     result.points = getRogainingPoints(
-      result.parsedControlTimes.filter(
+      result.parsedControlTimes?.filter(
         (controlTime: ControlTime) => controlTime.number
       ),
       course.controls,
@@ -502,13 +502,15 @@ export const setControlPositions = (
       const controlTime = result.parsedControlTimes?.find(
         (c) => c.number === index + 1
       );
-      if (controlTime) {
+      if (controlTime && !checkedControlTime(controlTime)) {
         const legPosition = legTimes.indexOf(controlTime.time) + 1;
         if (legPosition > 0) {
           controlTime.position = legPosition;
           controlTime.difference = controlTime.time - legTimes[0];
         }
-        const splitPosition = splitTimes.indexOf(controlTime.split.time) + 1;
+        const splitPosition = controlTime.split?.time
+          ? splitTimes.indexOf(controlTime.split.time) + 1
+          : 0;
         if (splitPosition > 0) {
           controlTime.split.position = splitPosition;
           controlTime.split.difference = controlTime.split.time - splitTimes[0];

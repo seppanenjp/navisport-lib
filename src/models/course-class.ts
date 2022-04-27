@@ -14,6 +14,12 @@ export enum PointSystem {
   NO_SYSTEM = "No system",
 }
 
+export interface CourseClassStage {
+  classId: string;
+  orderNumber: number;
+  qualifyCount?: number;
+}
+
 export class CourseClass {
   id: string;
   name: string;
