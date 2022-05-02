@@ -417,6 +417,17 @@ describe("Result tests", () => {
     expect(getResultTime(result1, courseClass1, course1)).toEqual(1526);
     expect(
       getResultTime(
+        {
+          ...result1,
+          startTime: "2022-01-01 10:00:00",
+          finishTime: "2022-01-01 10:12:05",
+        },
+        courseClass1,
+        course1
+      )
+    ).toEqual(725);
+    expect(
+      getResultTime(
         { ...result1, additionalPenalty: 10 },
         courseClass1,
         course1

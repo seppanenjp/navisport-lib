@@ -43,4 +43,16 @@ export const difference = (a, b) => {
   return changes(a, b);
 };
 
+export const timeDifference = (
+  startTime: string | number | Date,
+  endTime: string | number | Date,
+  milliseconds?: boolean // TODO use precision enum
+): number => {
+  const time = new Date(endTime).getTime() - new Date(startTime).getTime();
+  if (!milliseconds) {
+    return Math.floor(time / 1000);
+  }
+  return time;
+};
+
 export const clone = <T>(object: T): T => cloneDeep(object);

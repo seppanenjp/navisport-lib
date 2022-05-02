@@ -11,6 +11,7 @@ import { cloneDeep, flatMap, last } from "lodash";
 import { controlLabel, getCourse } from "./events";
 import { Checkpoint } from "../models/checkpoint";
 import { Passing } from "../models/passing";
+import { timeDifference } from "./common";
 
 export const readerControl = (controlTime: ControlTime): boolean =>
   controlTime.code === 250;
@@ -103,6 +104,7 @@ export const getPenaltyPoints = (
   );
 };
 
+// TODO: This is a bit too complex
 export const getResultTime = (
   result: Result,
   courseClass: CourseClass,
@@ -111,6 +113,10 @@ export const getResultTime = (
   if ([ResultStatus.NOTIME, ResultStatus.DNS].includes(result.status)) {
     return 0;
   }
+
+  const startTime =
+    courseClass.massStartTime || result.startTime || result.registerTime;
+
   const penalty =
     // Manual can't have penalty from missing controls
     (result.status !== ResultStatus.MANUAL
@@ -120,6 +126,12 @@ export const getResultTime = (
     (result.additionalPenalty && courseClass.type !== CourseClassType.ROGAINING
       ? Number(result.additionalPenalty) * 60
       : 0);
+
+  if (startTime && result.finishTime) {
+    const time = timeDifference(startTime, result.finishTime) + penalty;
+    return time > 0 ? time : 0;
+  }
+
   if (![ResultStatus.MANUAL].includes(result.status)) {
     const lastPunch: ControlTime =
       result.parsedControlTimes?.find(
@@ -132,14 +144,9 @@ export const getResultTime = (
       return time > 0 ? time : 0;
     }
   }
-  const startTime =
-    courseClass.massStartTime || result.startTime || result.registerTime;
+
   if (startTime && result.readTime) {
-    const time =
-      Math.floor(
-        (new Date(result.readTime).getTime() - new Date(startTime).getTime()) /
-          1000
-      ) + penalty;
+    const time = timeDifference(startTime, result.readTime) + penalty;
     return time > 0 ? time : 0;
   }
   return 0;
@@ -161,7 +168,7 @@ export const getTimeOffset = (
       : new Date(result.startTime).getTime();
     return (
       (result.controlTimes.find(readerControl)?.time ?? 0) -
-      Math.floor((new Date(result.readTime).getTime() - startTime) / 1000)
+      timeDifference(startTime, result.readTime)
     );
   }
   return 0;
@@ -596,11 +603,7 @@ export const setCheckpointPositions = (
       (p: Passing) => p.checkpointId === checkpoint.id
     );
     if (passing && result.startTime) {
-      passing.time = Math.floor(
-        (new Date(passing.timestamp).getTime() -
-          new Date(result.startTime).getTime()) /
-          1000
-      );
+      passing.time = timeDifference(result.startTime, passing.timestamp);
       passings.push(passing);
       times.push(passing.time);
     }

@@ -54,6 +54,7 @@ export class Result {
   leg?: number;
   registerTime?: string; // Date;
   startTime?: string; // Date;
+  finishTime?: string; // Date;
   readTime?: string; // Date;
   controlTimes?: ControlTime[];
   name: string;
