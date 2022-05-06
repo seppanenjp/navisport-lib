@@ -7,8 +7,8 @@ import {
   difference,
   createRandomString,
   clone,
+  timeDifference,
 } from "../../src";
-import { timeDifference } from "../../dist";
 require("../../src");
 
 describe("Common tests", () => {
@@ -137,5 +137,15 @@ describe("Common tests", () => {
     const t2 = new Date(t1.getTime() + 1000);
     expect(timeDifference(t1, t2)).toEqual(1);
     expect(timeDifference(t1, t2, true)).toEqual(1000);
+
+    const t3 = "2000-01-01 10:00:00";
+    const t4 = "2000-01-01 10:00:05";
+    expect(timeDifference(t3, t4)).toEqual(5);
+    expect(timeDifference(t3, t4, true)).toEqual(5000);
+
+    const t5 = 1000;
+    const t6 = 2000;
+    expect(timeDifference(t5, t6)).toEqual(1);
+    expect(timeDifference(t5, t6, true)).toEqual(1000);
   });
 });
