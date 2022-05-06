@@ -8,6 +8,7 @@ import {
   createRandomString,
   clone,
 } from "../../src";
+import { timeDifference } from "../../dist";
 require("../../src");
 
 describe("Common tests", () => {
@@ -129,5 +130,12 @@ describe("Common tests", () => {
     const testObject2 = testObject;
     expect(testObject === testObject2).toEqual(true);
     expect(testObject === clone(testObject2)).toEqual(false);
+  });
+
+  test("timeDifference", () => {
+    const t1 = new Date();
+    const t2 = new Date(t1.getTime() + 1000);
+    expect(timeDifference(t1, t2)).toEqual(1);
+    expect(timeDifference(t1, t2, true)).toEqual(1000);
   });
 });
