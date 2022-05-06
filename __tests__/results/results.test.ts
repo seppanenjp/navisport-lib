@@ -21,6 +21,7 @@ import {
   clone,
   calculatePoints,
   clearControlNumbers,
+  countByStatus,
 } from "../../src";
 import { courseClass1 } from "../../mock/course-class";
 import { course1, courses } from "../../mock/course";
@@ -417,6 +418,13 @@ describe("Result tests", () => {
     expect(getResultTime(result1, courseClass1, course1)).toEqual(1526);
     expect(
       getResultTime(
+        { ...result1, startTime: "2022-01-01 10:00:00", readTime: null },
+        courseClass1,
+        course1
+      )
+    ).toEqual(0);
+    expect(
+      getResultTime(
         {
           ...result1,
           startTime: "2022-01-01 10:00:00",
@@ -443,6 +451,30 @@ describe("Result tests", () => {
     expect(
       getResultTime(
         { ...result1, status: ResultStatus.DNS },
+        courseClass1,
+        course1
+      )
+    ).toEqual(0);
+    // Expect to work with negative time
+    expect(
+      getResultTime(
+        {
+          ...result1,
+          startTime: "2022-01-01 10:00:00",
+          readTime: "2022-01-01 09:00:00",
+        },
+        courseClass1,
+        course1
+      )
+    ).toEqual(0);
+
+    expect(
+      getResultTime(
+        {
+          ...result1,
+          startTime: "2022-01-01 10:00:00",
+          finishTime: "2022-01-01 09:00:00",
+        },
         courseClass1,
         course1
       )
@@ -516,6 +548,12 @@ describe("Result tests", () => {
 
     calculatePoints(TEST_EVENT.results, {});
     expect(TEST_EVENT.results[2].points).toEqual(null);
+  });
+
+  test("countByStatus", () => {
+    expect(countByStatus(TEST_EVENT.results, ResultStatus.OK)).toEqual(2);
+    expect(countByStatus(TEST_EVENT.results, ResultStatus.DSQ)).toEqual(1);
+    expect(countByStatus(TEST_EVENT.results, ResultStatus.DNF)).toEqual(0);
   });
 
   test("clearControlNumbers", () => {});
