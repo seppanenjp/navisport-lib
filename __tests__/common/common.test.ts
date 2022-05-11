@@ -76,7 +76,7 @@ describe("Common tests", () => {
   test("capitalize", () => {
     expect("abba".capitalize()).toEqual("Abba");
     expect("".capitalize()).toEqual("");
-    expect("cAPITALIZE".capitalize()).toEqual("CAPITALIZE");
+    expect("cAPITALIZE".capitalize()).toEqual("Capitalize");
   });
 
   test("validEmail", () => {
