@@ -8,7 +8,9 @@ import {
   createRandomString,
   clone,
   timeDifference,
+  combineDateAndTime,
 } from "../../src";
+
 require("../../src");
 
 describe("Common tests", () => {
@@ -147,5 +149,23 @@ describe("Common tests", () => {
     const t6 = 2000;
     expect(timeDifference(t5, t6)).toEqual(1);
     expect(timeDifference(t5, t6, true)).toEqual(1000);
+  });
+
+  test("combineDateAndTime", () => {
+    expect(
+      combineDateAndTime("2000-01-01 10:00:00", "2020-02-03 18:00:00")
+    ).toEqual(new Date("2000-01-01 18:00:00"));
+    expect(combineDateAndTime("2020-01-01", "13:00:00")).toEqual(
+      new Date("2020-01-01 13:00:00")
+    );
+    expect(
+      combineDateAndTime(new Date("2020-01-01T10:00:00Z"), "16:00:00")
+    ).toEqual(new Date("2020-01-01 16:00:00"));
+    expect(
+      combineDateAndTime(
+        new Date("2020-01-01T10:00:00Z"),
+        "2030-03-02T18:00:00Z"
+      )
+    ).toEqual(new Date("2020-01-01T18:00:00Z"));
   });
 });

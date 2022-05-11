@@ -35,6 +35,7 @@ declare global {
   interface String {
     toSeconds(): number | null;
     urlify(): string;
+    capitalize(): string;
   }
 
   interface Number {
@@ -90,6 +91,10 @@ String.prototype.toSeconds = function () {
     }
   }
   return null;
+};
+
+String.prototype.capitalize = function () {
+  return this.charAt(0).toUpperCase() + this.slice(1);
 };
 
 String.prototype.urlify = function () {

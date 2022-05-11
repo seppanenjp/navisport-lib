@@ -52,6 +52,7 @@ export class Result {
   user?: User;
   userId?: string;
   leg?: number;
+  subLeg?: number;
   registerTime?: string; // Date;
   startTime?: string; // Date;
   finishTime?: string; // Date;

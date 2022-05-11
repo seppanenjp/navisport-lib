@@ -48,6 +48,7 @@ export class Device {
   mode: DeviceMode;
   batteryLevel?: number;
   applicationMode?: ApplicationMode;
+  applicationVersion?: string;
   serialStatus: boolean;
   deviceType: DeviceType;
   updated?: string; // Date;

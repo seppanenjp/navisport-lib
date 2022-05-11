@@ -602,8 +602,7 @@ export const setCheckpointPositions = (
     const passing = result.passings?.find(
       (p: Passing) => p.checkpointId === checkpoint.id
     );
-    if (passing && result.startTime) {
-      passing.time = timeDifference(result.startTime, passing.timestamp);
+    if (passing) {
       passings.push(passing);
       times.push(passing.time);
     }
