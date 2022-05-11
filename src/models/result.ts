@@ -15,6 +15,7 @@ export enum ResultStatus {
   NOTIME = "No time",
   UNKNOWN = "Unknown",
   REGISTERED = "Registered",
+  /*  FINISHED = "Finished",*/
 }
 
 export enum PaymentState {

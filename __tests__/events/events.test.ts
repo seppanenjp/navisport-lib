@@ -11,6 +11,7 @@ import {
   getCourseClassName,
   getEventName,
   isRastilippuEvent,
+  multiDayEvent,
 } from "../../src";
 import { TEST_EVENT } from "../../mock/event";
 import { courseClass1 } from "../../mock/course-class";
@@ -81,5 +82,16 @@ describe("Event tests", () => {
     expect(
       isRastilippuEvent({ ...new Event(), externalApplication: "Rastilippu" })
     ).toEqual(true);
+  });
+
+  test("multiDayEvent", () => {
+    expect(multiDayEvent(TEST_EVENT)).toBeFalsy();
+    expect(
+      multiDayEvent({
+        ...new Event(),
+        begin: "2000-01-01T10:00:00Z",
+        ending: "2000-01-02T10:00:00Z",
+      })
+    );
   });
 });

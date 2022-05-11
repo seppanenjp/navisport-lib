@@ -1,6 +1,8 @@
 import { CourseClass } from "../models/course-class";
 import { Course } from "../models/course";
 import { Control } from "../models/control";
+import { Event } from "../models/event";
+import { timeDifference } from "./common";
 
 export const isRastilippuEvent = ({
   externalApplication,
@@ -75,6 +77,10 @@ export const getCourseClassCourses = (
   }
   return [];
 };
+
+export const multiDayEvent = (event: Event): boolean =>
+  new Date(event.begin).toDateString() !==
+  new Date(event.ending).toDateString();
 
 export const distanceToControl = (
   controls: Control[],
