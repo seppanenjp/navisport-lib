@@ -62,26 +62,17 @@ export const combineDateAndTime = (
   return new Date(Date.parse(`${getDateValue(date)} ${getTimeValue(time)}`));
 };
 
-const getDateValue = (date: string | number | Date): string => {
-  switch (typeof date) {
-    case "string":
-      return date.replace(" ", "T").split("T")[0];
-    case "number":
-    default:
-      return new Date(date).toISOString().split("T")[0];
-  }
-};
+const getDateValue = (date: string | number | Date): string =>
+  typeof date === "string"
+    ? date.replace(" ", "T").split("T")[0]
+    : new Date(date).toISOString().split("T")[0];
 
 const getTimeValue = (time: string | number | Date): string => {
-  switch (typeof time) {
-    case "string": {
-      const values = time.replace(" ", "T").split("T");
-      return values[values.length - 1];
-    }
-    case "number":
-    default:
-      return new Date(time).toISOString().split("T")[1];
+  if (typeof time === "string") {
+    const values = time.replace(" ", "T").split("T");
+    return values[values.length - 1];
   }
+  return new Date(time).toISOString().split("T")[1];
 };
 
 export const clone = <T>(object: T): T => cloneDeep(object);
