@@ -16,8 +16,5 @@
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/ban-ts-comment": "off"
   },
-  "ignorePatterns": [
-    "**/node_modules/",
-    "**/dist/"
-  ]
+  "ignorePatterns": ["**/node_modules/", "**/dist/"]
 }
