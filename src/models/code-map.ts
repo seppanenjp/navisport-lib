@@ -13,6 +13,4 @@ export class CodeMap {
 export class CodeMapCode {
   external: string | number;
   internal: number | number[];
-
-  constructor() {}
 }

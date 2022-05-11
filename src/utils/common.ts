@@ -13,7 +13,7 @@ export const validUUID = (uuid: string): boolean =>
   );
 
 export const validEmail = (email: string): boolean =>
-  /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
     String(email).toLowerCase()
   );
 
@@ -27,10 +27,10 @@ export const uuid = (): string =>
 export const createRandomString = (length: number): string =>
   [...Array(length)].map(() => (~~(Math.random() * 36)).toString(36)).join("");
 
-export const hasChanges = (a: any, b: any): boolean =>
+export const hasChanges = <T extends object>(a: T, b: T): boolean =>
   !isEqual(pickBy(a, identity), pickBy(b, identity));
 
-export const difference = (a, b) => {
+export const difference = <T extends object>(a: T, b: T) => {
   const changes = (object, base) =>
     transform(object, (result, value, key) => {
       if (!isEqual(value, base[key])) {
@@ -74,9 +74,10 @@ const getDateValue = (date: string | number | Date): string => {
 
 const getTimeValue = (time: string | number | Date): string => {
   switch (typeof time) {
-    case "string":
+    case "string": {
       const values = time.replace(" ", "T").split("T");
       return values[values.length - 1];
+    }
     case "number":
     default:
       return new Date(time).toISOString().split("T")[1];

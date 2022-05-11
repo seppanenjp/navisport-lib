@@ -29,7 +29,7 @@ declare global {
   interface Array<T> {
     add(item: T | T[], idProperty?: string): Array<T>;
     remove(item: T | string, idProperty?: string): Array<T>;
-    extend(items: any[]): void;
+    extend(items: T[]): void;
   }
 
   interface String {
@@ -72,7 +72,7 @@ Array.prototype.remove = function <T>(item, idProperty = "id") {
 };
 
 // TODO: remove this
-Array.prototype.extend = function (items = []) {
+Array.prototype.extend = function <T>(items: T[] = []) {
   items.forEach((item) => this.push(item));
 };
 

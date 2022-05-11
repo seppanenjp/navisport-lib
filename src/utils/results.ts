@@ -324,12 +324,12 @@ export const validateControlTimes = (
 ): ControlTime[] => {
   let skipTime = 0;
   const controlTimes = cloneDeep(result.controlTimes);
-  let lastPunchTime: number = 0;
+  let lastPunchTime = 0;
   for (const [index, control] of course.controls.entries()) {
     // const isLast: boolean = index === course.controls.length - 1;
     const controlTime = controlTimes.find(
       (ct) =>
-        !Boolean(ct.number) &&
+        !ct.number &&
         checkControlCode(ct.code, control.code) &&
         (courseClass.type !== CourseClassType.NOT_SPECIFIED ||
           // isLast || // This takes first "last" control if multiple found (is wrong then?)
@@ -398,7 +398,7 @@ export const resultsWithTimeAndPosition = (
           // Use default course if no course selected and class have only one course
           if (courseClass.courseIds.length === 1) {
             classResults
-              .filter((result: Result) => !Boolean(result.courseId))
+              .filter((result: Result) => !result.courseId)
               .forEach(
                 (result: Result) => (result.courseId = courseClass.courseIds[0])
               );
@@ -542,7 +542,10 @@ export const getMissingControls = (
   const missing: Control[] = [];
   if (result?.parsedControlTimes && result?.courseId) {
     const course: Course = getCourse(result.courseId, courses);
-    for (const [index, control] of course?.controls.entries()) {
+    if (!course?.controls) {
+      return missing;
+    }
+    for (const [index, control] of course.controls.entries()) {
       const controlTime = result.parsedControlTimes.find(
         (c) => c.number === index + 1
       );
@@ -720,23 +723,25 @@ export const calculatePoints = (
   results: Result[],
   system: CalculationSystem
 ): void => {
-  const ok = getCalculationSystem(system.ok);
-  const notOk = getCalculationSystem(system.notOk);
   results.forEach((result: Result) => {
     if (
       [ResultStatus.OK, ResultStatus.MANUAL].includes(result.status) &&
       system.ok
     ) {
-      ok(results, result);
+      setPoints(system.ok, results, result);
     } else if (result.status !== ResultStatus.REGISTERED && system.notOk) {
-      notOk(results, result);
+      setPoints(system.notOk, results, result);
     } else {
       result.points = null;
     }
   });
 };
 
-const getCalculationSystem = (systemString: string): Function =>
+const setPoints = (
+  systemString: string,
+  results: Result[],
+  result: Result
+): void =>
   Function(
     "results",
     "result",
@@ -745,4 +750,4 @@ const getCalculationSystem = (systemString: string): Function =>
           .replace(/\[FIRST_RESULT]/g, "results[0]")
           .replace(/\[RESULT]/g, "result")})`
       : null
-  );
+  )(results, result);

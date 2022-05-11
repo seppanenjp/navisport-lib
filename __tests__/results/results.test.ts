@@ -556,5 +556,25 @@ describe("Result tests", () => {
     expect(countByStatus(TEST_EVENT.results, ResultStatus.DNF)).toEqual(0);
   });
 
-  test("clearControlNumbers", () => {});
+  test("clearControlNumbers", () => {
+    const controlTimesWithNumbers = validateControlTimes(
+      result1,
+      courseClass1,
+      course1,
+      0
+    );
+    expect(
+      controlTimesWithNumbers.some(
+        (controlTime: ControlTime) => controlTime.number
+      )
+    ).toBeTruthy();
+    const controlTimesWithoutNumbers = clearControlNumbers(
+      controlTimesWithNumbers
+    );
+    expect(
+      controlTimesWithoutNumbers.some(
+        (controlTime: ControlTime) => controlTime.number
+      )
+    ).toBeFalsy();
+  });
 });

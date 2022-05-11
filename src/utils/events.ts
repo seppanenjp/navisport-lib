@@ -81,7 +81,7 @@ export const distanceToControl = (
   control: Control
 ): number => {
   let distance = 0;
-  for (let courseControl of controls) {
+  for (const courseControl of controls) {
     distance += courseControl.distance;
     if (courseControl === control) {
       return distance;

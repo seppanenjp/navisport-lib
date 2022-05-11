@@ -1,4 +1,3 @@
-import * as global from "../../src";
 import {
   hasChanges,
   uuid,

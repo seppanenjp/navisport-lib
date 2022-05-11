@@ -13,8 +13,8 @@ export class Control {
   constructor(
     code: number,
     distance: number = null,
-    freeOrder: boolean = false,
-    skip: boolean = false,
+    freeOrder = false,
+    skip = false,
     label = null
   ) {
     this.code = code;

@@ -7,7 +7,9 @@
   "scripts": {
     "build": "tsc && yarn rollup -c && rm -rf dist/dts && rm -rf dist/src && rm -rf dist/mock",
     "test": "jest",
-    "test:ci": "jest --runInBand"
+    "test:ci": "jest --runInBand",
+    "eslint": "eslint . --ext .ts",
+    "prettier": "prettier --check ./"
   },
   "author": "",
   "license": "ISC",
@@ -16,6 +18,7 @@
     "@types/jest": "^27.5.0",
     "@types/lodash": "^4.14.182",
     "@types/node": "^17.0.31",
+    "@typescript-eslint/eslint-plugin": "^5.23.0",
     "eslint": "^8.14.0",
     "eslint-plugin-import": "^2.26.0",
     "jest": "^28.0.3",

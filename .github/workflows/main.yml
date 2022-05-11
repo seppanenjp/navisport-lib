@@ -18,7 +18,12 @@ jobs:
             ${{ runner.os }}-node-
       - name: Install
         run: npm ci
-
+      - name: Build
+        run: npm run build
+      - name: Prettier
+        run: npm run prettier
+      - name: ESlint
+        run: npm run eslint
       - name: Test
         run: npm run test:ci
 
