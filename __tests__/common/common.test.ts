@@ -74,6 +74,12 @@ describe("Common tests", () => {
     expect("ÅLAND on Affenanmaa".urlify()).toEqual("alandonaffenanmaa");
   });
 
+  test("capitalize", () => {
+    expect("abba".capitalize()).toEqual("Abba");
+    expect("".capitalize()).toEqual("");
+    expect("cAPITALIZE".capitalize()).toEqual("CAPITALIZE");
+  });
+
   test("validEmail", () => {
     expect(validEmail("foo@bar.local")).toEqual(true);
     expect(validEmail("foo@local")).toEqual(false);
