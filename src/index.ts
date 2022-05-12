@@ -41,6 +41,7 @@ declare global {
   interface Number {
     toHms(format?: HMSFormat): string | null;
     padZero(): number;
+    toPositiveOrZero(): number;
   }
 }
 
@@ -128,4 +129,8 @@ Number.prototype.toHms = function (format: HMSFormat = HMSFormat.Short) {
 
 Number.prototype.padZero = function () {
   return this.toString().padStart(2, "0");
+};
+
+Number.prototype.toPositiveOrZero = function () {
+  return this < 0 ? 0 : this;
 };

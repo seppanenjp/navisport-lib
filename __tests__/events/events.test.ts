@@ -78,10 +78,10 @@ describe("Event tests", () => {
   });
 
   test("isRastilippuEvent", () => {
-    expect(isRastilippuEvent(TEST_EVENT)).toEqual(false);
+    expect(isRastilippuEvent(TEST_EVENT)).toBeFalsy();
     expect(
       isRastilippuEvent({ ...new Event(), externalApplication: "Rastilippu" })
-    ).toEqual(true);
+    ).toBeTruthy();
   });
 
   test("multiDayEvent", () => {

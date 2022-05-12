@@ -76,17 +76,20 @@ describe("Common tests", () => {
   test("capitalize", () => {
     expect("abba".capitalize()).toEqual("Abba");
     expect("".capitalize()).toEqual("");
+    expect("a".capitalize()).toEqual("A");
+    expect("_b".capitalize()).toEqual("_b");
+    expect("123456".capitalize()).toEqual("123456");
     expect("cAPITALIZE".capitalize()).toEqual("Capitalize");
   });
 
   test("validEmail", () => {
-    expect(validEmail("foo@bar.local")).toEqual(true);
-    expect(validEmail("foo@local")).toEqual(false);
+    expect(validEmail("foo@bar.local")).toBeTruthy();
+    expect(validEmail("foo@local")).toBeFalsy();
   });
 
   test("validUuid", () => {
-    expect(validUUID(uuid())).toEqual(true);
-    expect(validUUID("12412-4124-124-24-2124")).toEqual(false);
+    expect(validUUID(uuid())).toBeTruthy();
+    expect(validUUID("12412-4124-124-24-2124")).toBeFalsy();
   });
 
   test("createRandomString", () => {
@@ -101,8 +104,8 @@ describe("Common tests", () => {
         value: "value",
       },
     };
-    expect(hasChanges(testObject, { ...testObject, value: "" })).toEqual(true);
-    expect(hasChanges(testObject, { ...testObject })).toEqual(false);
+    expect(hasChanges(testObject, { ...testObject, value: "" })).toBeTruthy();
+    expect(hasChanges(testObject, { ...testObject })).toBeFalsy();
   });
 
   test("difference", () => {
@@ -135,8 +138,8 @@ describe("Common tests", () => {
       value: "value",
     };
     const testObject2 = testObject;
-    expect(testObject === testObject2).toEqual(true);
-    expect(testObject === clone(testObject2)).toEqual(false);
+    expect(testObject === testObject2).toBeTruthy();
+    expect(testObject === clone(testObject2)).toBeFalsy();
   });
 
   test("timeDifference", () => {
@@ -172,5 +175,10 @@ describe("Common tests", () => {
         "2030-03-02T18:00:00Z"
       )
     ).toEqual(new Date("2020-01-01T18:00:00Z"));
+  });
+
+  test("padZero", () => {
+    expect(Number(1).padZero()).toEqual("01");
+    expect(Number(11).padZero()).toEqual("11");
   });
 });

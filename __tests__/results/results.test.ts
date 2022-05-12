@@ -22,10 +22,13 @@ import {
   calculatePoints,
   clearControlNumbers,
   countByStatus,
+  getResultPositionAndDifference,
+  getResultTimeDifference,
+  resultSort,
 } from "../../src";
 import { courseClass1 } from "../../mock/course-class";
 import { course1, courses } from "../../mock/course";
-import { result1 } from "../../mock/result";
+import { result1, result2, result3, results } from "../../mock/result";
 import { last } from "lodash";
 import { TEST_EVENT } from "../../mock/event";
 
@@ -198,8 +201,8 @@ describe("Result tests", () => {
   });
 
   test("readerControl", () => {
-    expect(readerControl(new ControlTime(31, 100))).toEqual(false);
-    expect(readerControl(new ControlTime(250, 100))).toEqual(true);
+    expect(readerControl(new ControlTime(31, 100))).toBeFalsy();
+    expect(readerControl(new ControlTime(250, 100))).toBeTruthy();
   });
 
   test("getDuration", () => {
@@ -344,6 +347,18 @@ describe("Result tests", () => {
         courses
       ).length
     ).toEqual(1);
+
+    expect(
+      getMissingControls({ ...result1, parsedControlTimes: missingControls }, [
+        { ...course1, controls: [] },
+      ]).length
+    ).toEqual(0);
+    expect(
+      getMissingControls(
+        { ...result1, parsedControlTimes: missingControls },
+        []
+      ).length
+    ).toEqual(0);
   });
 
   test("getStartTime", () => {
@@ -516,7 +531,7 @@ describe("Result tests", () => {
       [...result1.controlTimes, checked2].find(checkedControlTime)
     ).toEqual(checked2);
 
-    expect(checkedControlTime(undefined)).toEqual(false);
+    expect(checkedControlTime(undefined)).toBeFalsy();
   });
 
   test("formatResultTime", () => {
@@ -576,5 +591,44 @@ describe("Result tests", () => {
         (controlTime: ControlTime) => controlTime.number
       )
     ).toBeFalsy();
+  });
+
+  test("getResultPositionAndDifference", () => {
+    expect(getResultPositionAndDifference(result1, results)).toEqual({
+      position: 1,
+      difference: 0,
+    });
+    expect(getResultPositionAndDifference(result1, [])).toEqual({
+      position: 1,
+      difference: 0,
+    });
+    expect(getResultPositionAndDifference(result2, results)).toEqual({
+      position: 2,
+      difference: 200,
+    });
+    expect(getResultPositionAndDifference(result3, results)).toEqual({
+      position: 3,
+      difference: 0,
+    });
+  });
+
+  test("getResultTimeDifference", () => {
+    expect(getResultTimeDifference(result1, results)).toEqual(0);
+    expect(getResultTimeDifference(result2, results)).toEqual(200);
+    expect(getResultTimeDifference(result2, [])).toEqual(0);
+  });
+
+  test("resultSort", () => {
+    expect(resultSort(result1, result2)).toEqual(-1);
+    expect(resultSort(result2, result1)).toEqual(1);
+    expect(resultSort(result2, result3)).toEqual(-1);
+    expect(resultSort(result3, result2)).toEqual(1);
+    expect(resultSort({ ...result2, points: 10 }, result1)).toEqual(-1);
+    expect(resultSort(result2, { ...result1, points: 50 })).toEqual(1);
+    expect(resultSort({ ...result2, time: 0 }, result1)).toEqual(1);
+    expect(resultSort(result2, { ...result1, time: 0 })).toEqual(-1);
+    expect(resultSort(result1, result1)).toEqual(0);
+    expect([...results].sort(resultSort)).toEqual(results);
+    expect([result2, result3, result1].sort(resultSort)).toEqual(results);
   });
 });

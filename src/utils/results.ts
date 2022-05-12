@@ -129,7 +129,7 @@ export const getResultTime = (
 
   if (startTime && result.finishTime) {
     const time = timeDifference(startTime, result.finishTime) + penalty;
-    return time > 0 ? time : 0;
+    return time.toPositiveOrZero();
   }
 
   if (![ResultStatus.MANUAL].includes(result.status)) {
@@ -141,13 +141,13 @@ export const getResultTime = (
     if (lastPunch?.time > 0) {
       // Last punch time + penalty min
       const time: number = lastPunch.time + penalty;
-      return time > 0 ? time : 0;
+      return time.toPositiveOrZero();
     }
   }
 
   if (startTime && result.readTime) {
     const time = timeDifference(startTime, result.readTime) + penalty;
-    return time > 0 ? time : 0;
+    return time.toPositiveOrZero();
   }
   return 0;
 };
@@ -185,7 +185,10 @@ export const formatResultTime = ({
     ? "-"
     : time?.toHms();
 
-export const resultSort = (firstResult: Result, secondResult: Result) => {
+export const resultSort = (
+  firstResult: Result,
+  secondResult: Result
+): number => {
   const {
     points: firstPoints,
     time: firstTime,
@@ -278,7 +281,7 @@ export const parseResult = (
       courseClass.pointSystem
     );
     result.points -= getPenaltyPoints(result, courseClass);
-    result.points = result.points > 0 ? result.points : 0;
+    result.points = result.points.toPositiveOrZero();
   }
 };
 
@@ -291,7 +294,7 @@ export const setClassPositions = (results: Result[]): Result[] =>
           (r: Result) =>
             r.time === result.time && (r.points || 0) === (result.points || 0)
         ) + 1,
-      difference: getTimeDifference(results, result),
+      difference: getResultTimeDifference(result, results),
     };
   });
 
@@ -299,12 +302,12 @@ export const getResultPositionAndDifference = (
   result: Result,
   results: Result[]
 ): { difference: number; position: number } => {
-  const updatedResult = setClassPositions(results.add(result)).find(
+  const updatedResult: Result = setClassPositions(results.add(result)).find(
     (r) => r.id === result.id
   );
   return {
-    difference: updatedResult?.difference,
-    position: updatedResult?.position,
+    difference: updatedResult.difference,
+    position: updatedResult.position,
   };
 };
 
@@ -428,8 +431,13 @@ export const resultsWithTimeAndPosition = (
     })
   );
 
-export const getTimeDifference = (results: Result[], result: Result): number =>
-  result && results.length ? result.time - results[0].time : 0;
+export const getResultTimeDifference = (
+  result: Result,
+  results: Result[]
+): number =>
+  result && results.length
+    ? (result.time - results[0].time).toPositiveOrZero()
+    : 0;
 
 export const countByStatus = (
   results: Result[],
