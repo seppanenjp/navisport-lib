@@ -119,7 +119,7 @@ export const getResultTime = (
 
   const penalty =
     // Manual can't have penalty from missing controls
-    (result.status !== ResultStatus.MANUAL
+    (![ResultStatus.MANUAL, ResultStatus.REGISTERED].includes(result.status)
       ? 60 * getPenaltyFromMissingControls(result, courseClass, course)
       : 0) +
     // Additional penalty time if class is not Rogaining
@@ -408,7 +408,10 @@ export const resultsWithTimeAndPosition = (
           }
 
           courseResults.forEach((result: Result) => {
-            if (result.status !== ResultStatus.REGISTERED) {
+            if (
+              result.status !== ResultStatus.REGISTERED ||
+              (result.status === ResultStatus.REGISTERED && result.finishTime)
+            ) {
               // TODO: return result insted of modify
               parseResult(result, courseClass, course);
             }

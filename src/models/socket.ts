@@ -1,6 +1,6 @@
-export interface SocketMessage<T> {
+export interface SocketMessage {
   operation: SocketOperation;
-  payload: T;
+  payload: any;
   replaceAll?: boolean;
   eventId?: string;
   subject: SocketSubject;

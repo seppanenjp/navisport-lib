@@ -35,6 +35,7 @@ export enum DeviceCommandType {
   SPEAK = "Speak",
   CHANGE_MODE = "Change mode",
   CHANGE_NAME = "Change name",
+  SEND_LOGS = "Send logs",
 }
 
 export class Device {
