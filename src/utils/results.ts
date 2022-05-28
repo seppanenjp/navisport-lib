@@ -504,7 +504,7 @@ export const listLowBatteryWarnings = (
   const warnings: LowBatteryWarning[] = [];
   flatMap(
     results.map((result: Result) => {
-      const batteryWarnings = result.controlTimes.filter(
+      const batteryWarnings = result.controlTimes?.filter(
         (controlTime: ControlTime) => controlTime.code === 99
       );
       const codes = [];

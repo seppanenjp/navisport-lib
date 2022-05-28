@@ -9,16 +9,13 @@ export class ChipData {
   startTime?: number;
   timestamp: number;
   number: string;
-  holder: CardHolder;
-  controlTimes: ControlTime[];
-  metadata: Metadata;
+  holder: CardHolder = {};
+  controlTimes: ControlTime[] = [];
+  metadata: Metadata = {};
   constructor(chipNumber?: string) {
     if (chipNumber) {
       this.number = chipNumber;
     }
-    this.controlTimes = [];
-    this.metadata = {};
-    this.holder = {};
   }
 }
 
