@@ -1,5 +1,6 @@
 export interface SocketMessage {
   operation: SocketOperation;
+  // eslint-disable-next-line
   payload: any;
   replaceAll?: boolean;
   eventId?: string;
