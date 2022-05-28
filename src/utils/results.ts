@@ -12,6 +12,7 @@ import { controlLabel, getCourse } from "./events";
 import { Checkpoint } from "../models/checkpoint";
 import { Passing } from "../models/passing";
 import { timeDifference } from "./common";
+import { LowBatteryWarning } from "../models/chip-data";
 
 export const readerControl = (controlTime: ControlTime): boolean =>
   controlTime.code === 250;
@@ -495,6 +496,34 @@ export const getRogainingPoints = (
         })
         .reduce((acc, curr) => curr + acc)
     : 0;
+};
+
+export const listLowBatteryWarnings = (
+  results: Result[]
+): LowBatteryWarning[] => {
+  const warnings: LowBatteryWarning[] = [];
+  flatMap(
+    results.map((result: Result) => {
+      const batteryWarnings = result.controlTimes.filter(
+        (controlTime: ControlTime) => controlTime.code === 99
+      );
+      const codes = [];
+      batteryWarnings.forEach((batteryWarning: ControlTime) => {
+        const control = result.controlTimes.find(
+          (controlTime: ControlTime) =>
+            controlTime.time === batteryWarning.time && controlTime.code !== 99
+        );
+        control && codes.push(control.code);
+      });
+      return codes;
+    })
+  ).forEach((punchCode: number) => {
+    const existing = warnings.find(({ code }) => code === punchCode);
+    existing
+      ? (existing.warningCount += 1)
+      : warnings.push({ code: punchCode, warningCount: 1 });
+  });
+  return warnings;
 };
 
 export const setControlPositions = (

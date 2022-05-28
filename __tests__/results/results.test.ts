@@ -25,6 +25,7 @@ import {
   getResultPositionAndDifference,
   getResultTimeDifference,
   resultSort,
+  listLowBatteryWarnings,
 } from "../../src";
 import { courseClass1 } from "../../mock/course-class";
 import { course1, courses } from "../../mock/course";
@@ -536,10 +537,12 @@ describe("Result tests", () => {
 
   test("formatResultTime", () => {
     expect(formatResultTime(result1)).toEqual("22:43");
-    expect(
-      formatResultTime({ ...result1, status: ResultStatus.NOTIME })
-    ).toEqual("-");
-    expect(formatResultTime({ ...result1, time: null })).toEqual("-");
+    expect(formatResultTime({ status: ResultStatus.NOTIME, time: 50 })).toEqual(
+      "-"
+    );
+    expect(formatResultTime({ status: ResultStatus.OK, time: null })).toEqual(
+      "-"
+    );
   });
 
   test("getStatusWeight", () => {
@@ -630,5 +633,46 @@ describe("Result tests", () => {
     expect(resultSort(result1, result1)).toEqual(0);
     expect([...results].sort(resultSort)).toEqual(results);
     expect([result2, result3, result1].sort(resultSort)).toEqual(results);
+  });
+
+  test("listLowBatteryWarnings", () => {
+    expect(listLowBatteryWarnings(results)).toEqual([]);
+    const resultWithLowBattery1 = clone(result1);
+    const resultWithLowBattery2 = clone(result2);
+    resultWithLowBattery1.controlTimes[3] = {
+      code: 99,
+      time: resultWithLowBattery1.controlTimes[2].time,
+    };
+    resultWithLowBattery2.controlTimes[3] = {
+      code: 99,
+      time: resultWithLowBattery2.controlTimes[2].time,
+    };
+    resultWithLowBattery2.controlTimes[8] = {
+      code: 99,
+      time: resultWithLowBattery2.controlTimes[7].time,
+    };
+
+    expect(listLowBatteryWarnings([resultWithLowBattery1, result2])).toEqual([
+      { code: resultWithLowBattery1.controlTimes[2].code, warningCount: 1 },
+    ]);
+
+    expect(
+      listLowBatteryWarnings([resultWithLowBattery1, resultWithLowBattery2])
+    ).toEqual([
+      { code: resultWithLowBattery1.controlTimes[2].code, warningCount: 2 },
+      { code: resultWithLowBattery2.controlTimes[7].code, warningCount: 1 },
+    ]);
+
+    // Should not trigger warning if control is not known (same timestamp as 99 control)
+    resultWithLowBattery2.controlTimes[3] = {
+      code: 99,
+      time: resultWithLowBattery2.controlTimes[2].time + 2,
+    };
+    expect(
+      listLowBatteryWarnings([resultWithLowBattery1, resultWithLowBattery2])
+    ).toEqual([
+      { code: resultWithLowBattery1.controlTimes[2].code, warningCount: 1 },
+      { code: resultWithLowBattery2.controlTimes[7].code, warningCount: 1 },
+    ]);
   });
 });

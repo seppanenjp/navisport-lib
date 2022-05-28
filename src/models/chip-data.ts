@@ -1,5 +1,10 @@
 import { ControlTime } from "./control-time";
 
+export interface LowBatteryWarning {
+  code: number;
+  warningCount: number;
+}
+
 export class ChipData {
   startTime?: number;
   timestamp: number;
