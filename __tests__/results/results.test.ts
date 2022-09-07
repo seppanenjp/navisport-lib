@@ -688,25 +688,22 @@ describe("Result tests", () => {
   });
 
   test("isLoopControl", () => {
+    const controls = clone(course1.controls);
     expect(
-      isLoopControl(
-        course1.controls[3],
-        course1.controls,
-        LoopControlType.Begin
-      )
+      isLoopControl(controls[3], controls, LoopControlType.Begin)
     ).toBeFalsy();
-    course1.controls[3].code = 41;
-    const loopControls = course1.controls.filter(
+    controls[3].code = 41;
+    const loopControls = controls.filter(
       (control: Control) => control.code === 41
     );
     expect(
-      isLoopControl(loopControls[0], course1.controls, LoopControlType.Begin)
+      isLoopControl(loopControls[0], controls, LoopControlType.Begin)
     ).toBeTruthy();
     expect(
-      isLoopControl(loopControls[1], course1.controls, LoopControlType.Begin)
+      isLoopControl(loopControls[1], controls, LoopControlType.Begin)
     ).toBeFalsy();
     expect(
-      isLoopControl(loopControls[1], course1.controls, LoopControlType.End)
+      isLoopControl(loopControls[1], controls, LoopControlType.End)
     ).toBeTruthy();
   });
 });
