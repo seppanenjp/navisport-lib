@@ -7,7 +7,7 @@ import { PaymentState, Result, ResultStatus } from "../models/result";
 import { Course } from "../models/course";
 import { Control } from "../models/control";
 import { ControlTime, ControlTimeStatus } from "../models/control-time";
-import { cloneDeep, flatMap, last } from "lodash";
+import { cloneDeep, flatMap, last, uniqBy } from "lodash";
 import { controlLabel, getCourse } from "./events";
 import { Checkpoint } from "../models/checkpoint";
 import { Passing } from "../models/passing";
@@ -275,9 +275,7 @@ export const parseResult = (
   if (courseClass.type === CourseClassType.ROGAINING && result.time) {
     // Check only punched controls as parsedControlTimes contains also controls that does not belong to course
     result.points = getRogainingPoints(
-      result.parsedControlTimes?.filter(
-        (controlTime: ControlTime) => controlTime.number
-      ),
+      result.parsedControlTimes,
       course.controls,
       courseClass.pointSystem
     );
@@ -363,11 +361,11 @@ export const validateControlTimes = (
       // If not controlTime and control is disabled then add controlTime as checked!
       if (control.disabled) {
         controlTimes.push({
-          ...new ControlTime(
-            Array.isArray(control.code) ? control.code[0] : control.code,
-            0,
-            index + 1
-          ),
+          ...{
+            code: Array.isArray(control.code) ? control.code[0] : control.code,
+            time: 0,
+            number: index + 1,
+          },
           status: ControlTimeStatus.CHECKED,
         });
       }
@@ -457,44 +455,27 @@ export const getRogainingPoints = (
   if (system === PointSystem.NO_SYSTEM || !controlTimes?.length) {
     return 0;
   }
-  const lastControl: number | number[] = last(controls)?.code;
 
-  controlTimes = [...controlTimes];
-  controlTimes.pop(); // Remove reader (250)
-  const index = controlTimes.findIndex(
-    (control) =>
-      control.code === lastControl ||
-      (Array.isArray(lastControl) && lastControl.includes(control.code))
+  controlTimes = [...controlTimes].filter(
+    (controlTime: ControlTime) =>
+      controlTime.number && controlTime.number !== controls.length // Remove last control
   );
-  if (index >= 0) {
-    // Remove last control if punched
-    controlTimes.splice(index, 1);
-  }
   return controlTimes.length
-    ? controlTimes
+    ? uniqBy(controlTimes, "number")
         .map((controlTime: ControlTime) => {
-          const control = controls.find((c) =>
-            checkControlCode(controlTime.code, c.code)
-          );
-          if (!control) {
-            return 0;
-          }
+          const control = controls[controlTime.number - 1];
           const code = controlLabel(control);
           if (system === PointSystem.FIRST_CODE) {
             // Get first char
             return Number(code.toString()[0]);
           } else if (system === PointSystem.LAST_CODE) {
-            // const points = Number(last(code.toString()));
+            const points = Number(last(code.toString()));
             // Get last char or 10 if points 0
-            // return points > 0 ? points : 10;
-
-            // Get last char
-            return Number(last(code.toString()));
-          } else {
-            return 1;
+            return points > 0 ? points : 10;
           }
+          return 1;
         })
-        .reduce((acc, curr) => curr + acc)
+        .reduce((acc, curr) => curr + acc, 0)
     : 0;
 };
 
@@ -504,9 +485,10 @@ export const listLowBatteryWarnings = (
   const warnings: LowBatteryWarning[] = [];
   flatMap(
     results.map((result: Result) => {
-      const batteryWarnings = result.controlTimes?.filter(
-        (controlTime: ControlTime) => controlTime.code === 99
-      );
+      const batteryWarnings =
+        result.controlTimes?.filter(
+          (controlTime: ControlTime) => controlTime.code === 99
+        ) || [];
       const codes = [];
       batteryWarnings.forEach((batteryWarning: ControlTime) => {
         const control = result.controlTimes.find(
@@ -791,3 +773,22 @@ const setPoints = (
           .replace(/\[RESULT]/g, "result")})`
       : null
   )(results, result);
+
+export enum LoopControlType {
+  Begin = "Begin",
+  End = "End",
+}
+
+export const isLoopControl = (
+  control: Control,
+  controls: Control[],
+  loopControlType: LoopControlType
+): boolean => {
+  const loopControls = controls.filter((c: Control) => c.code === control.code);
+  if (loopControls.length > 1) {
+    return loopControlType === LoopControlType.Begin
+      ? loopControls.indexOf(control) % 2 === 0 // Every second control is loop control begin
+      : loopControls.indexOf(control) % 2 !== 0;
+  }
+  return false;
+};

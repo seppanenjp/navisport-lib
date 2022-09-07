@@ -1,13 +1,14 @@
 import {
+  clone,
+  combineDateAndTime,
+  createRandomString,
+  difference,
   hasChanges,
+  timeDifference,
   uuid,
   validEmail,
   validUUID,
-  difference,
-  createRandomString,
-  clone,
-  timeDifference,
-  combineDateAndTime,
+  HMSFormat,
 } from "../../src";
 
 require("../../src");
@@ -66,6 +67,12 @@ describe("Common tests", () => {
     expect(Number(3600).toHms()).toEqual("1:00:00");
     expect(Number(4210).toHms()).toEqual("1:10:10");
     expect(Number(-10).toHms()).toEqual(null);
+
+    expect(Number(3600).toHms(HMSFormat.MinutesAndSeconds)).toEqual("60:00");
+    expect(Number(4210).toHms(HMSFormat.MinutesAndSeconds)).toEqual("70:10");
+
+    expect(Number(3600).toHms(HMSFormat.Full)).toEqual("01:00:00");
+    expect(Number(60).toHms(HMSFormat.Full)).toEqual("00:01:00");
   });
 
   test("urlify", () => {

@@ -108,6 +108,7 @@ String.prototype.urlify = function () {
 export enum HMSFormat {
   Short = "Short",
   Full = "Full",
+  MinutesAndSeconds = "Minutes and seconds",
 }
 
 Number.prototype.toHms = function (format: HMSFormat = HMSFormat.Short) {
@@ -117,14 +118,19 @@ Number.prototype.toHms = function (format: HMSFormat = HMSFormat.Short) {
   const minutes: number = Math.floor(this / 60);
   const seconds: number = this - minutes * 60;
   const hours: number = Math.floor(minutes / 60);
-  return format === HMSFormat.Short
-    ? minutes >= 60
-      ? `${hours}:${(minutes - hours * 60).padZero()}:${seconds.padZero()}`
-      : `${minutes}:${seconds.padZero()}`
-    : `${hours.padZero()}:${(
+  switch (format) {
+    case HMSFormat.MinutesAndSeconds:
+      return `${minutes.padZero()}:${seconds.padZero()}`;
+    case HMSFormat.Short:
+      return minutes >= 60
+        ? `${hours}:${(minutes - hours * 60).padZero()}:${seconds.padZero()}`
+        : `${minutes}:${seconds.padZero()}`;
+    case HMSFormat.Full:
+      return `${hours.padZero()}:${(
         minutes -
         hours * 60
       ).padZero()}:${seconds.padZero()}`;
+  }
 };
 
 Number.prototype.padZero = function () {

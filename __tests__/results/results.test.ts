@@ -1,31 +1,34 @@
 import {
+  calculatePoints,
   checkedControlTime,
+  clearControlNumbers,
+  clone,
   Control,
   ControlTime,
   ControlTimeStatus,
+  countByStatus,
   CourseClassType,
   formatResultTime,
   getDuration,
   getMissingControls,
   getPenaltyFromMissingControls,
   getPenaltyPoints,
+  getResultPositionAndDifference,
   getResultTime,
+  getResultTimeDifference,
   getRogainingPoints,
   getStartTime,
   getStatusWeight,
   getTimeOffset,
+  isLoopControl,
+  listLowBatteryWarnings,
+  LoopControlType,
+  parseResult,
   PointSystem,
   readerControl,
+  resultSort,
   ResultStatus,
   validateControlTimes,
-  clone,
-  calculatePoints,
-  clearControlNumbers,
-  countByStatus,
-  getResultPositionAndDifference,
-  getResultTimeDifference,
-  resultSort,
-  listLowBatteryWarnings,
 } from "../../src";
 import { courseClass1 } from "../../mock/course-class";
 import { course1, courses } from "../../mock/course";
@@ -202,8 +205,8 @@ describe("Result tests", () => {
   });
 
   test("readerControl", () => {
-    expect(readerControl(new ControlTime(31, 100))).toBeFalsy();
-    expect(readerControl(new ControlTime(250, 100))).toBeTruthy();
+    expect(readerControl({ code: 31, time: 100 })).toBeFalsy();
+    expect(readerControl({ code: 250, time: 100 })).toBeTruthy();
   });
 
   test("getDuration", () => {
@@ -388,9 +391,11 @@ describe("Result tests", () => {
   });
 
   test("getRogainingPoints", () => {
+    const testResult = clone(result1);
+    parseResult(testResult, courseClass1, course1);
     expect(
       getRogainingPoints(
-        result1.controlTimes,
+        testResult.parsedControlTimes,
         course1.controls,
         PointSystem.NO_SYSTEM
       )
@@ -398,7 +403,7 @@ describe("Result tests", () => {
 
     expect(
       getRogainingPoints(
-        result1.controlTimes,
+        testResult.parsedControlTimes,
         course1.controls,
         PointSystem.FIRST_CODE
       )
@@ -406,15 +411,15 @@ describe("Result tests", () => {
 
     expect(
       getRogainingPoints(
-        result1.controlTimes,
+        testResult.parsedControlTimes,
         course1.controls,
         PointSystem.LAST_CODE
       )
-    ).toEqual(105);
+    ).toEqual(115);
 
     expect(
       getRogainingPoints(
-        result1.controlTimes,
+        testResult.parsedControlTimes,
         course1.controls,
         PointSystem.ONE_POINT
       )
@@ -423,7 +428,7 @@ describe("Result tests", () => {
     // Should work when punched same control again and course does not have same control two times
     expect(
       getRogainingPoints(
-        [...result1.controlTimes, result1.controlTimes[0]],
+        [...testResult.parsedControlTimes, testResult.parsedControlTimes[0]],
         course1.controls,
         PointSystem.ONE_POINT
       )
@@ -674,5 +679,34 @@ describe("Result tests", () => {
       { code: resultWithLowBattery1.controlTimes[2].code, warningCount: 1 },
       { code: resultWithLowBattery2.controlTimes[7].code, warningCount: 1 },
     ]);
+
+    // Should work with result without controlTimes
+
+    expect(
+      listLowBatteryWarnings([{ ...resultWithLowBattery1, controlTimes: null }])
+    ).toEqual([]);
+  });
+
+  test("isLoopControl", () => {
+    expect(
+      isLoopControl(
+        course1.controls[3],
+        course1.controls,
+        LoopControlType.Begin
+      )
+    ).toBeFalsy();
+    course1.controls[3].code = 41;
+    const loopControls = course1.controls.filter(
+      (control: Control) => control.code === 41
+    );
+    expect(
+      isLoopControl(loopControls[0], course1.controls, LoopControlType.Begin)
+    ).toBeTruthy();
+    expect(
+      isLoopControl(loopControls[1], course1.controls, LoopControlType.Begin)
+    ).toBeFalsy();
+    expect(
+      isLoopControl(loopControls[1], course1.controls, LoopControlType.End)
+    ).toBeTruthy();
   });
 });

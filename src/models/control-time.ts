@@ -2,22 +2,26 @@ export enum ControlTimeStatus {
   CHECKED = "Checked",
 }
 
-export class ControlTime {
-  number?: number;
+export interface ControlTime {
   code: number;
   time: number;
-  difference?: number;
-  position?: number;
+
+  number?: number;
+  difference?: number; // Leg difference if relay
+  position?: number; // Leg position if relay
+
+  totalPosition?: number; // For relay
+  totalDifference?: number; // For relay
+
   status?: ControlTimeStatus;
+
+  timestamp?: Date;
+
   split?: {
+    pace?: number;
+    distance?: number;
     time: number;
     position?: number;
     difference?: number;
   };
-
-  constructor(code: number, time: number, controlNumber?: number) {
-    this.code = code;
-    this.time = time;
-    this.number = controlNumber;
-  }
 }
