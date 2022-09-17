@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc && yarn rollup -c && rm -rf dist/dts && rm -rf dist/src && rm -rf dist/mock",
     "test": "jest",
-    "test:ci": "jest --runInBand",
+    "test:ci": "jest --runInBand --coverage",
     "eslint": "eslint . --ext .ts",
     "prettier": "prettier --check ./",
     "prepare": "husky install"
