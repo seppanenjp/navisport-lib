@@ -51,10 +51,10 @@ export enum Precision {
 export const timeDifference = (
   startTime: string | number | Date,
   endTime: string | number | Date,
-  precision?: Precision.Milliseconds
+  precision: Precision = Precision.Seconds
 ): number => {
   const time = new Date(endTime).getTime() - new Date(startTime).getTime();
-  if (precision !== Precision.Milliseconds) {
+  if (precision === Precision.Seconds) {
     return Math.floor(time / 1000);
   }
   return time;
