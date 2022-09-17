@@ -182,6 +182,12 @@ describe("Common tests", () => {
         "2030-03-02T18:00:00Z"
       )
     ).toEqual(new Date("2020-01-01T18:00:00Z"));
+    expect(
+      combineDateAndTime(
+        new Date("2020-01-01T10:00:00Z"),
+        new Date("2030-03-02T18:00:00Z")
+      )
+    ).toEqual(new Date("2020-01-01T18:00:00Z"));
   });
 
   test("padZero", () => {

@@ -88,7 +88,8 @@ export class Result {
   points?: number;
   updated: string; // Date;
   passings?: Passing[];
-  parsedControlTimes?: ControlTime[];
+  /*  parsedControlTimes?: ControlTime[];*/
+  disqualificationReason?: string;
   difference?: number;
 
   constructor() {
@@ -97,7 +98,7 @@ export class Result {
     this.gender = Gender.NOT_SPECIFIED;
     this.paymentState = PaymentState.NOT_PAID;
     this.controlTimes = [];
-    this.parsedControlTimes = [];
+    /*    this.parsedControlTimes = [];*/
     this.nationality = "FIN";
     this.registered = false;
     this.private = false;

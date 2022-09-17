@@ -6,7 +6,10 @@ export interface ControlTime {
   code: number;
   time: number;
 
+  timeWithOffset?: number;
+
   number?: number;
+
   difference?: number; // Leg difference if relay
   position?: number; // Leg position if relay
 

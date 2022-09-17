@@ -11,8 +11,9 @@ import { cloneDeep, flatMap, last, uniqBy } from "lodash";
 import { controlLabel, getCourse } from "./events";
 import { Checkpoint } from "../models/checkpoint";
 import { Passing } from "../models/passing";
-import { timeDifference } from "./common";
+import { clone, timeDifference } from "./common";
 import { LowBatteryWarning } from "../models/chip-data";
+import { Event } from "../models/event";
 
 export const readerControl = (controlTime: ControlTime): boolean =>
   controlTime.code === 250;
@@ -55,11 +56,10 @@ export const getPenaltyFromMissingControls = (
         .length > 0) &&
     courseClass.type !== CourseClassType.ROGAINING
   ) {
-    const numbers = result.parsedControlTimes?.length
-      ? result.parsedControlTimes
-          .filter((controlTime: ControlTime) => controlTime.number)
-          .map((controlTime: ControlTime) => controlTime.number)
-      : [];
+    const numbers =
+      result.controlTimes
+        ?.filter((controlTime: ControlTime) => controlTime.number)
+        .map((controlTime: ControlTime) => controlTime.number) || [];
     const controls = [...course.controls]
       .map((control: Control, index: number) => ({
         ...control,
@@ -135,13 +135,13 @@ export const getResultTime = (
 
   if (![ResultStatus.MANUAL].includes(result.status)) {
     const lastPunch: ControlTime =
-      result.parsedControlTimes?.find(
+      result.controlTimes?.find(
         (controlTime: ControlTime) =>
           controlTime.number === course.controls.length
-      ) || result.parsedControlTimes?.find(readerControl);
-    if (lastPunch?.time > 0) {
+      ) || result.controlTimes?.find(readerControl);
+    if (lastPunch?.timeWithOffset > 0) {
       // Last punch time + penalty min
-      const time: number = lastPunch.time + penalty;
+      const time: number = lastPunch.timeWithOffset + penalty;
       return time.toPositiveOrZero();
     }
   }
@@ -164,12 +164,12 @@ export const getTimeOffset = (
     result.readTime &&
     result.controlTimes?.length
   ) {
-    const startTime = courseClass.massStartTime
-      ? new Date(courseClass.massStartTime).getTime()
-      : new Date(result.startTime).getTime();
     return (
       (result.controlTimes.find(readerControl)?.time ?? 0) -
-      timeDifference(startTime, result.readTime)
+      timeDifference(
+        courseClass.massStartTime || result.startTime,
+        result.readTime
+      )
     );
   }
   return 0;
@@ -260,12 +260,14 @@ export const parseResult = (
   // Set correct controlTimes
   if (result.controlTimes?.length && result.status !== ResultStatus.MANUAL) {
     const timeOffset = getTimeOffset(result, courseClass);
-    result.parsedControlTimes = validateControlTimes(
+    result.controlTimes = validateControlTimes(
       result,
       courseClass,
       course,
       timeOffset
-    ).filter((controlTime) => controlTime.time >= -1);
+    );
+
+    //.filter((controlTime) => controlTime.time >= -1);
   }
   // Set result time
   result.time = getResultTime(result, courseClass, course);
@@ -275,7 +277,7 @@ export const parseResult = (
   if (courseClass.type === CourseClassType.ROGAINING && result.time) {
     // Check only punched controls as parsedControlTimes contains also controls that does not belong to course
     result.points = getRogainingPoints(
-      result.parsedControlTimes,
+      result.controlTimes,
       course.controls,
       courseClass.pointSystem
     );
@@ -322,40 +324,91 @@ export const validateControlTimes = (
   result: Result,
   courseClass: CourseClass,
   course: Course,
-  offset: number
+  offset: number,
+  forceUpdate: boolean = true
 ): ControlTime[] => {
   let skipTime = 0;
-  const controlTimes = cloneDeep(result.controlTimes);
+  let controlTimes = cloneDeep(result.controlTimes);
   let lastPunchTime = 0;
+  // let isInsideLoop = false;
+  // Skip calculation if controlTimes already has control numbers
+  if (
+    !forceUpdate &&
+    controlTimes.some((controlTime: ControlTime) => controlTime.number)
+  ) {
+    return controlTimes;
+  }
+
+  controlTimes = clearControlNumbers(controlTimes);
+
+  /* const checkIfInsideLoop = (control: Control, isCurrentlyInside: boolean) => {
+    if (
+      !isCurrentlyInside &&
+      isLoopControl(control, course.controls, LoopControlType.Begin)
+    ) {
+      return true;
+    } else if (
+      isCurrentlyInside &&
+      isLoopControl(control, course.controls, LoopControlType.End)
+    ) {
+      return false;
+    }
+    return isCurrentlyInside;
+  };*/
+
   for (const [index, control] of course.controls.entries()) {
-    // const isLast: boolean = index === course.controls.length - 1;
-    const controlTime = controlTimes.find(
+    let controlTime = controlTimes.find(
       (ct) =>
         !ct.number &&
         checkControlCode(ct.code, control.code) &&
         (courseClass.type !== CourseClassType.NOT_SPECIFIED ||
-          // isLast || // This takes first "last" control if multiple found (is wrong then?)
           ct.time > lastPunchTime + skipTime + offset ||
           checkedControlTime(ct))
     );
+    // If not inside loop -> check that controlTime.code is not inside loop
+    // If inside loop -> check that controlTime.code is inside loop
+
+    // If missed the first loop control
+
+    /*
+    if (
+      isLoopControl(control, course.controls, LoopControlType.Begin) &&
+      course.controls.length > index + 1
+    ) {
+      console.log("Is checking loop control", control);
+      // Check that next control is valid!
+      const nextControl = course.controls[index + 1];
+      console.log("next control should be", nextControl.code);
+      const nextPunch = controlTimes[controlTimes.indexOf(controlTime) + 1];
+      console.log("next punch is", nextPunch?.code);
+      // If not then we are not punching correct loop control
+      if (!checkControlCode(nextPunch?.code, nextControl.code)) {
+        console.log("not correct next punch");
+        continue;
+      }
+    }
+*/
+
     if (controlTime) {
       controlTime.number = index + 1;
-      controlTime.time = checkedControlTime(controlTime)
+      controlTime.timeWithOffset = checkedControlTime(controlTime)
         ? controlTime.time
         : controlTime.time - offset;
       controlTime.split = {
         time:
-          controlTime.time - skipTime - (lastPunchTime > 0 ? lastPunchTime : 0),
+          controlTime.timeWithOffset -
+          skipTime -
+          (lastPunchTime > 0 ? lastPunchTime : 0),
       };
 
-      if (controlTime.time >= 0 && !control.freeOrder) {
+      if (controlTime.timeWithOffset >= 0 && !control.freeOrder) {
         if (control.skip) {
           skipTime += controlTime.split.time;
           controlTime.split.time = 0;
         }
 
-        controlTime.time -= skipTime;
-        lastPunchTime = controlTime.time;
+        controlTime.timeWithOffset -= skipTime;
+        lastPunchTime = controlTime.timeWithOffset;
       }
     } else {
       // If not controlTime and control is disabled then add controlTime as checked!
@@ -364,16 +417,21 @@ export const validateControlTimes = (
           ...{
             code: Array.isArray(control.code) ? control.code[0] : control.code,
             time: 0,
+            timeWithOffset: 0,
             number: index + 1,
           },
           status: ControlTimeStatus.CHECKED,
         });
       }
     }
+
+    // Update inside loop status
+    //  isInsideLoop = checkIfInsideLoop(control, isInsideLoop);
   }
+  // TODO: check if timeWithOffset needs also skiptime?
   const reader = controlTimes.find(readerControl);
   if (reader) {
-    reader.time -= offset;
+    reader.timeWithOffset -= offset;
   }
   return controlTimes;
 };
@@ -517,7 +575,7 @@ export const setControlPositions = (
     const legTimes: number[] = [];
     const splitTimes: number[] = [];
     results.forEach((result: Result) => {
-      const controlTime = result.parsedControlTimes?.find(
+      const controlTime = result.controlTimes?.find(
         (c) => c.number === index + 1 && c.time > 0
       );
       if (controlTime) {
@@ -528,7 +586,7 @@ export const setControlPositions = (
     legTimes.sort((a, b) => a - b);
     splitTimes.sort((a, b) => a - b);
     results.forEach((result: Result) => {
-      const controlTime = result.parsedControlTimes?.find(
+      const controlTime = result.controlTimes?.find(
         (c) => c.number === index + 1
       );
       if (controlTime && !checkedControlTime(controlTime)) {
@@ -562,13 +620,13 @@ export const getMissingControls = (
   courses: Course[]
 ): Control[] => {
   const missing: Control[] = [];
-  if (result?.parsedControlTimes && result?.courseId) {
+  if (result?.controlTimes && result?.courseId) {
     const course: Course = getCourse(result.courseId, courses);
     if (!course?.controls) {
       return missing;
     }
     for (const [index, control] of course.controls.entries()) {
-      const controlTime = result.parsedControlTimes.find(
+      const controlTime = result.controlTimes.find(
         (c) => c.number === index + 1
       );
       if (!controlTime) {
@@ -782,13 +840,225 @@ export enum LoopControlType {
 export const isLoopControl = (
   control: Control,
   controls: Control[],
-  loopControlType: LoopControlType
+  loopControlType?: LoopControlType
 ): boolean => {
   const loopControls = controls.filter((c: Control) => c.code === control.code);
   if (loopControls.length > 1) {
-    return loopControlType === LoopControlType.Begin
-      ? loopControls.indexOf(control) % 2 === 0 // Every second control is loop control begin
-      : loopControls.indexOf(control) % 2 !== 0;
+    return loopControlType
+      ? loopControlType === LoopControlType.Begin
+        ? loopControls.indexOf(control) % 2 === 0 // Every second control is loop control begin
+        : loopControls.indexOf(control) % 2 !== 0
+      : true;
   }
   return false;
 };
+
+export const hasCorrectPunchedControlTimes = (
+  controlTimes: ControlTime[]
+): boolean => getValidControlTimes(controlTimes).length > 0;
+
+export const getValidControlTimes = (
+  controlTimes: ControlTime[]
+): ControlTime[] =>
+  controlTimes.filter((controlTime: ControlTime) => controlTime.number);
+
+export const validFinishTime = (result: Result, course: Course): boolean => {
+  if (result.finishTime && result.readTime) {
+    // Time is valid if difference between result finishTime and calculated finishTime is less than 5sec
+    const calculatedFinishTime = calculateFinishTimeFromReader(result, course);
+    return timeDifference(result.startTime, calculatedFinishTime) < 5;
+  }
+  return true;
+};
+
+export const calculateFinishTimeFromReader = (
+  result: Result,
+  course: Course
+): Date => {
+  const readControlTime = result.controlTimes?.find(readerControl);
+  const lastControl = last(course.controls);
+  const lastControlTime =
+    last(
+      result.controlTimes.filter((controlTime: ControlTime) =>
+        checkControlCode(controlTime.code, lastControl?.code)
+      )
+    ) || readControlTime;
+
+  if (!readControlTime || !lastControlTime) {
+    return null;
+  }
+
+  let finishTime = new Date(result.readTime);
+  finishTime.setTime(
+    finishTime.getTime() - (readControlTime.time - lastControlTime.time) * 1000
+  );
+  return finishTime;
+};
+
+export const isFinishedRelayResult = (result: Result): boolean =>
+  Boolean(
+    ((result.readTime && result.controlTimes) || result.finishTime) &&
+      result.leg &&
+      result.teamId
+  );
+
+export const pseudonymize = (result: Result): void => {
+  if (result.private) {
+    result.name = "N.N";
+    result.club = "";
+  }
+};
+
+export const suggestCourseClass = (
+  result: Result,
+  event: Event,
+  forceSuggest: boolean = false
+): void => {
+  // If originalClass does not have correct punches then check if some other class has
+  const originalClassId = result.classId;
+  const originalCourseId = result.courseId;
+
+  let correctClassFound = false;
+
+  // Trigger suggest by clearing class & course
+  if (forceSuggest) {
+    result.courseId = null;
+    result.classId = null;
+  }
+
+  if (!result.controlTimes?.length) {
+    // If manual timing with classId and without courseId
+    if (result.classId && !result.courseId) {
+      const courseClass = event.courseClasses.find(
+        (c) => c.id === result.classId
+      );
+      const course = event.courses.filter((c: Course) =>
+        courseClass.courseIds.includes(c.id)
+      )[0];
+      result.courseId = course?.id;
+    }
+    return;
+  }
+  // Check that course belongs to courseClass
+  if (result.courseId && result.classId) {
+    const courseClass = event.courseClasses.find(
+      (c) => c.id === result.classId
+    );
+    if (!courseClass.courseIds.includes(result.courseId)) {
+      result.courseId = null;
+    }
+  }
+
+  if (!result.courseId) {
+    let suggestedCourse: Course;
+    let suggestedClass: CourseClass;
+    let commonControls = 0;
+    let courses: Course[] = clone(event.courses);
+    if (result.classId) {
+      suggestedClass = event.courseClasses.find((c) => c.id === result.classId);
+      if (suggestedClass.courseIds?.length === 1) {
+        result.courseId = suggestedClass.courseIds[0];
+        return;
+      }
+      courses = courses.filter((c) => suggestedClass.courseIds.includes(c.id));
+    }
+    const sortedCourses: Course[] = courses.sort(sortByControlCount);
+    for (const course of sortedCourses) {
+      if (
+        course.controls &&
+        course.controls.length &&
+        course.controls[0].code !== 0
+      ) {
+        let courseClass: CourseClass = suggestedClass;
+        if (!result.classId) {
+          courseClass = event.courseClasses.find((c: CourseClass) =>
+            c.courseIds.includes(course.id)
+          );
+        }
+        if (!courseClass) {
+          // Course without courseClass
+          continue;
+        }
+        const controlTimes = validateControlTimes(
+          result,
+          courseClass,
+          course,
+          0
+        ).filter((controlTime: ControlTime) => controlTime.number);
+        const newCommon = controlTimes.length / course.controls.length;
+        if (
+          newCommon >= commonControls ||
+          (suggestedCourse &&
+            controlTimes.length > suggestedCourse.controls.length) // TODO: handle case where multiple broken controls
+        ) {
+          if (
+            suggestedClass?.type === CourseClassType.ROGAINING && // Comparison between two Rogaining courses
+            courseClass.type === CourseClassType.ROGAINING
+          ) {
+            const finalTime = last(controlTimes)?.time || 0; // TODO: should get correct final time
+            const suggestedDuration = getDuration(suggestedClass);
+            const duration = getDuration(courseClass);
+            if (
+              (finalTime > suggestedDuration && duration > suggestedDuration) ||
+              (finalTime <= duration && duration < suggestedDuration)
+            ) {
+              commonControls = newCommon;
+              suggestedClass = courseClass;
+              suggestedCourse = course;
+
+              // Result has full match to suggested course
+              correctClassFound = commonControls === 1;
+            }
+          } else if (
+            courseClass.type !== CourseClassType.ROGAINING ||
+            (courseClass.type === CourseClassType.ROGAINING &&
+              commonControls < 1)
+          ) {
+            // Select Rogaining only if no suitable course found
+            commonControls = newCommon;
+            suggestedCourse = course;
+            suggestedClass = courseClass;
+            // Result has full match to suggested course
+            correctClassFound = commonControls === 1;
+          }
+        }
+      }
+    }
+
+    if (suggestedCourse && suggestedClass) {
+      result.courseId = suggestedCourse.id;
+      result.classId = suggestedClass.id;
+
+      // If result does not belong to any other class then just use original
+      if (
+        forceSuggest &&
+        !correctClassFound &&
+        originalClassId &&
+        originalCourseId
+      ) {
+        result.courseId = originalCourseId;
+        result.classId = originalClassId;
+      }
+    } else {
+      const courseClass = event.courseClasses[0];
+      result.classId = courseClass.id;
+      result.courseId = courseClass.courseIds[0];
+    }
+  }
+};
+
+const sortByControlCount = (a: Course, b: Course) => {
+  if (a.controls.length < b.controls.length) {
+    return -1;
+  } else if (a.controls.length > b.controls.length) {
+    return 1;
+  }
+  return 0;
+};
+
+export const compareControlTimes = (
+  c1: ControlTime[],
+  c2: ControlTime[]
+): boolean =>
+  JSON.stringify(c1.slice(0, c1.length - 1)) ===
+  JSON.stringify(c2.slice(0, c2.length - 1));
