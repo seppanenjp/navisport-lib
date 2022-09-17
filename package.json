@@ -9,9 +9,10 @@
     "test": "jest",
     "test:ci": "jest --runInBand",
     "eslint": "eslint . --ext .ts",
-    "prettier": "prettier --check ./"
+    "prettier": "prettier --check ./",
+    "prepare": "husky install"
   },
-  "author": "",
+  "author": "Jukka-Pekka Seppänen",
   "license": "ISC",
   "devDependencies": {
     "@types/geojson": "^7946.0.8",

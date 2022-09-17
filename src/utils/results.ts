@@ -325,7 +325,7 @@ export const validateControlTimes = (
   courseClass: CourseClass,
   course: Course,
   offset: number,
-  forceUpdate: boolean = true
+  forceUpdate = true
 ): ControlTime[] => {
   let skipTime = 0;
   let controlTimes = cloneDeep(result.controlTimes);
@@ -357,7 +357,7 @@ export const validateControlTimes = (
   };*/
 
   for (const [index, control] of course.controls.entries()) {
-    let controlTime = controlTimes.find(
+    const controlTime = controlTimes.find(
       (ct) =>
         !ct.number &&
         checkControlCode(ct.code, control.code) &&
@@ -888,7 +888,7 @@ export const calculateFinishTimeFromReader = (
     return null;
   }
 
-  let finishTime = new Date(result.readTime);
+  const finishTime = new Date(result.readTime);
   finishTime.setTime(
     finishTime.getTime() - (readControlTime.time - lastControlTime.time) * 1000
   );
@@ -912,7 +912,7 @@ export const pseudonymize = (result: Result): void => {
 export const suggestCourseClass = (
   result: Result,
   event: Event,
-  forceSuggest: boolean = false
+  forceSuggest = false
 ): void => {
   // If originalClass does not have correct punches then check if some other class has
   const originalClassId = result.classId;
