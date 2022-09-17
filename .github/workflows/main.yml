@@ -6,7 +6,7 @@ on:
     branches: [ master ]
   workflow_dispatch:
 jobs:
-  build:
+  Build and test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -28,5 +28,5 @@ jobs:
         run: npm run eslint
       - name: Test and Coverage
         run: npm run test:ci
-
+      - uses: codecov/codecov-action@v3
 
