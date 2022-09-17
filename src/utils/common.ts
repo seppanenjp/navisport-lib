@@ -43,13 +43,18 @@ export const difference = <T extends object>(a: T, b: T) => {
   return changes(a, b);
 };
 
+export enum Precision {
+  Seconds = "Seconds",
+  Milliseconds = "Milliseconds",
+}
+
 export const timeDifference = (
   startTime: string | number | Date,
   endTime: string | number | Date,
-  milliseconds?: boolean // TODO use precision enum
+  precision?: Precision.Milliseconds
 ): number => {
   const time = new Date(endTime).getTime() - new Date(startTime).getTime();
-  if (!milliseconds) {
+  if (precision !== Precision.Milliseconds) {
     return Math.floor(time / 1000);
   }
   return time;

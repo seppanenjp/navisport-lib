@@ -57,7 +57,7 @@ Array.prototype.add = function <T>(items: T | T[], idProperty = "id") {
     );
     idx !== -1 ? (_self[idx] = item) : _self.push(item);
   });
-  return _self; // [...new Map(_self.map((v) => [v[idProperty], v])).values()];
+  return _self;
 };
 
 Array.prototype.remove = function <T>(item, idProperty = "id") {
