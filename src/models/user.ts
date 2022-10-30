@@ -1,5 +1,6 @@
 import { Organisation } from "./organisation";
 import { Gender, Result } from "./result";
+import { StringOrDate } from "./date";
 
 export enum UserRole {
   ADMIN = "Admin",
@@ -33,8 +34,8 @@ export class User {
   organisationId?: string;
   results?: Result[];
   registrations?: Result[];
-  lastLogin: string; // Date;
-  updated?: string; // Date;
+  lastLogin: StringOrDate;
+  updated?: StringOrDate;
 
   constructor() {
     this.role = UserRole.USER;

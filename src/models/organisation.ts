@@ -4,6 +4,7 @@ import { Device } from "./device";
 import { Series } from "./series";
 import { Participant } from "./participant";
 import { Event } from "./event";
+import { StringOrDate } from "./date";
 
 export enum Licence {
   Basic = "Basic",
@@ -43,7 +44,7 @@ export class Organisation {
   profileImage?: string;
   paymentReference?: number; // Latest payment
   primaryEmail?: string;
-  licenceExpiration: string; // Date;
+  licenceExpiration: StringOrDate;
   businessId?: string;
   phoneNumber?: string;
   postalAddress?: string;
@@ -52,7 +53,7 @@ export class Organisation {
   licenceUsage?: number;
   rentalChips?: string[];
   restrictions?: string[];
-  updated?: string; // Date;
+  updated?: StringOrDate;
 
   users?: User[];
   codeMaps?: CodeMap[];

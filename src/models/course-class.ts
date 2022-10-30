@@ -2,6 +2,7 @@ import { Course } from "./course";
 import { Checkpoint } from "./checkpoint";
 import { Result } from "./result";
 import { uuid } from "../utils/common";
+import { StringOrDate } from "./date";
 
 export enum CourseClassType {
   NOT_SPECIFIED = "Not specified",
@@ -27,11 +28,11 @@ export class CourseClass {
   eventId: string;
   orderNumber: number;
   legs?: number;
-  massStartTime?: string; // Date;
-  secondMassStartTime?: string; // Date;
-  finishClosingTime?: string; // Date;
+  massStartTime?: StringOrDate;
+  secondMassStartTime?: StringOrDate;
+  finishClosingTime?: StringOrDate;
   firstStartNumber?: number;
-  firstStartTime?: string; // Date;
+  firstStartTime?: StringOrDate;
   startInterval?: number;
   checkpoints?: Checkpoint[];
   checkpointIds: string[];
@@ -43,7 +44,7 @@ export class CourseClass {
   results?: Result[];
   courses?: Course[];
   stages: CourseClassStage[];
-  updated?: string; // Date;
+  updated?: StringOrDate;
 
   constructor(name = "Uusi sarja") {
     this.id = uuid();

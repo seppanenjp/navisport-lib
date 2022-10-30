@@ -1,6 +1,7 @@
 import { Control } from "./control";
 import { Result } from "./result";
 import { v4 as uuid } from "uuid";
+import { StringOrDate } from "./date";
 
 export class Course {
   id: string;
@@ -9,7 +10,7 @@ export class Course {
   startNumber?: string;
   distance?: number;
   controls?: Control[];
-  updated: string; // Date;
+  updated: StringOrDate;
   results?: Result[];
 
   constructor(id?: string) {

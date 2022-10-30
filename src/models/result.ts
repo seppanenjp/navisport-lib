@@ -5,6 +5,7 @@ import { CourseClass } from "./course-class";
 import { User } from "./user";
 import { FeatureCollection } from "geojson";
 import { Event, EventState, Sport } from "./event";
+import { StringOrDate } from "./date";
 
 export enum ResultStatus {
   OK = "Ok",
@@ -54,10 +55,10 @@ export class Result {
   userId?: string;
   leg?: number;
   subLeg?: number;
-  registerTime?: string; // Date;
-  startTime?: string; // Date;
-  finishTime?: string; // Date;
-  readTime?: string; // Date;
+  registerTime?: StringOrDate; // Date;
+  startTime?: StringOrDate; // Date;
+  finishTime?: StringOrDate; // Date;
+  readTime?: StringOrDate; // Date;
   controlTimes?: ControlTime[];
   name: string;
   club?: string;
@@ -86,11 +87,12 @@ export class Result {
   time?: number;
   position?: number;
   points?: number;
-  updated: string; // Date;
+  updated: StringOrDate; // Date;
   passings?: Passing[];
   /*  parsedControlTimes?: ControlTime[];*/
   disqualificationReason?: string;
   difference?: number;
+  deleted?: StringOrDate;
 
   constructor() {
     this.resultType = ResultType.INDIVIDUAL;
@@ -121,8 +123,8 @@ export interface MyResult {
   };
   event: {
     id: string;
-    begin: string;
-    ending: string;
+    begin: StringOrDate;
+    ending: StringOrDate;
     name: string;
     sport: Sport;
     state: EventState;

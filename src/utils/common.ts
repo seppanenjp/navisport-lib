@@ -6,6 +6,7 @@ import {
   pickBy,
   identity,
 } from "lodash";
+import { Time } from "../models/date";
 
 export const validUUID = (uuid: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -49,8 +50,8 @@ export enum Precision {
 }
 
 export const timeDifference = (
-  startTime: string | number | Date,
-  endTime: string | number | Date,
+  startTime: Time,
+  endTime: Time,
   precision: Precision = Precision.Seconds
 ): number => {
   const time = new Date(endTime).getTime() - new Date(startTime).getTime();
@@ -60,19 +61,16 @@ export const timeDifference = (
   return time;
 };
 
-export const combineDateAndTime = (
-  date: string | number | Date,
-  time: string | number | Date
-): Date => {
+export const combineDateAndTime = (date: Time, time: Time): Date => {
   return new Date(Date.parse(`${getDateValue(date)} ${getTimeValue(time)}`));
 };
 
-const getDateValue = (date: string | number | Date): string =>
+const getDateValue = (date: Time): string =>
   typeof date === "string"
     ? date.replace(" ", "T").split("T")[0]
     : new Date(date).toISOString().split("T")[0];
 
-const getTimeValue = (time: string | number | Date): string => {
+const getTimeValue = (time: Time): string => {
   if (typeof time === "string") {
     const values = time.replace(" ", "T").split("T");
     return values[values.length - 1];

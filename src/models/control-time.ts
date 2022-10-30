@@ -1,3 +1,5 @@
+import { StringOrDate } from "./date";
+
 export enum ControlTimeStatus {
   CHECKED = "Checked",
 }
@@ -6,7 +8,7 @@ export interface ControlTime {
   code: number;
   time: number;
 
-  timeWithOffset?: number;
+  offsetTime?: number;
 
   number?: number;
 
@@ -18,7 +20,7 @@ export interface ControlTime {
 
   status?: ControlTimeStatus;
 
-  timestamp?: Date;
+  timestamp?: StringOrDate;
 
   split?: {
     pace?: number;

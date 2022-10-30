@@ -1,5 +1,6 @@
 import { Passing } from "./passing";
 import { Event } from "./event";
+import { StringOrDate } from "./date";
 
 export enum CheckpointType {
   START = "Start",
@@ -20,7 +21,7 @@ export class Checkpoint {
   passings?: Passing[];
   orderNumber: number;
   distance?: number;
-  updated?: string; // Date;
+  updated?: StringOrDate;
 
   constructor() {
     this.type = CheckpointType.CHECKPOINT;

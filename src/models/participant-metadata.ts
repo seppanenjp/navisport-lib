@@ -1,4 +1,5 @@
 import { Gender } from "./result";
+import { StringOrDate } from "./date";
 
 export class ParticipantMetadata {
   chip: string;
@@ -13,5 +14,5 @@ export class ParticipantMetadata {
   email?: string;
   phoneNumber?: string;
   gender: Gender;
-  updated?: string; // Date;
+  updated?: StringOrDate;
 }

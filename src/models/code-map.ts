@@ -1,9 +1,11 @@
+import { StringOrDate } from "./date";
+
 export class CodeMap {
   id: string;
   organisationId: string;
   name: string;
   codes: CodeMapCode[];
-  updated?: string; // Date;
+  updated?: StringOrDate;
 
   constructor() {
     this.codes = [];

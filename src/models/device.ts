@@ -1,6 +1,7 @@
 import { Checkpoint } from "./checkpoint";
 import { Passing } from "./passing";
 import { Event } from "./event";
+import { StringOrDate } from "./date";
 
 export enum DeviceMode {
   EMIT_USB = "EMIT USB",
@@ -52,7 +53,7 @@ export class Device {
   applicationVersion?: string;
   serialStatus: boolean;
   deviceType: DeviceType;
-  updated?: string; // Date;
+  updated?: StringOrDate;
 
   constructor() {
     this.mode = DeviceMode.EMIT_USB;

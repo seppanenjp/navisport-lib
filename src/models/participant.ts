@@ -1,4 +1,5 @@
 import { Gender, PaymentState } from "./result";
+import { StringOrDate } from "./date";
 
 export class Participant {
   id: string;
@@ -24,7 +25,7 @@ export class Participant {
   organisationId: string;
   private: boolean;
   additionalInfo?: string;
-  updated?: string; // Date;
+  updated?: StringOrDate;
   constructor() {
     this.paymentState = PaymentState.NOT_PAID;
     this.gender = Gender.NOT_SPECIFIED;

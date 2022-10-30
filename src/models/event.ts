@@ -8,6 +8,7 @@ import { Passing } from "./passing";
 import { MapInformation } from "./map-information";
 import { Series } from "./series";
 import { Link } from "./link";
+import { StringOrDate } from "./date";
 
 export enum Sport {
   ORIENTEERING = "Orienteering",
@@ -48,8 +49,8 @@ export class Event {
   name: string;
   series?: Series;
   seriesId?: string;
-  begin: string; // Date;
-  ending: string; // Date;
+  begin: StringOrDate;
+  ending: StringOrDate;
   sport: Sport;
   classification: Classification;
   raceType: RaceType;
@@ -66,9 +67,9 @@ export class Event {
   invitation?: string;
   homePage?: string;
   logoUrl?: string;
-  startListPublication?: string; // Date;
-  mapPublication?: string; // Date;
-  mapImageUploaded?: string; // Date;
+  startListPublication?: StringOrDate;
+  mapPublication?: StringOrDate;
+  mapImageUploaded?: StringOrDate;
   organisation?: Organisation;
   organisationId: string;
   stageNumber?: number;
@@ -77,8 +78,8 @@ export class Event {
   hasRentalChips: boolean;
   registrationSettings?: RegistrationFormField[];
   links?: Link[];
-  registrationBegin?: string; // Date;
-  registrationEnding?: string; // Date;
+  registrationBegin?: StringOrDate;
+  registrationEnding?: StringOrDate;
   courses?: Course[];
   courseClasses?: CourseClass[];
   results?: Result[];
@@ -87,7 +88,7 @@ export class Event {
   passings?: Passing[];
   paymentCategories?: PaymentCategory[];
   private = false;
-  updated?: string; // Date;
+  updated?: StringOrDate;
 
   constructor() {
     this.courseClasses = [];
@@ -105,14 +106,22 @@ export class Event {
   }
 }
 
+export enum CategoryType {
+  SINGLE_EVENT = "Single event",
+  SERIES = "Series",
+}
+
 export class PaymentCategory {
   id: string;
-  event: Event;
-  eventId: string;
+  event?: Event;
+  eventId?: string;
+  seriesId?: string;
+  series?: Series;
   name: string;
   price?: number;
   onlinePayment?: boolean;
   additionalInformation?: string;
+  categoryType: CategoryType;
   updated?: Date;
 
   constructor() {

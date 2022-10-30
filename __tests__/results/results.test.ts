@@ -145,17 +145,16 @@ describe("Result tests", () => {
       expect(validControlTimesWithSkip[2].split.time).toEqual(0);
       expect(validControlTimesWithSkip[3].split.time).toEqual(0);
 
-      expect(validControlTimes[4].timeWithOffset).toEqual(265);
+      expect(validControlTimes[4].offsetTime).toEqual(265);
       expect(validControlTimes[4].split.time).toEqual(
-        validControlTimes[4].timeWithOffset -
-          validControlTimes[3].timeWithOffset
+        validControlTimes[4].offsetTime - validControlTimes[3].offsetTime
       );
 
-      expect(validControlTimesWithSkip[4].timeWithOffset).toEqual(182);
+      expect(validControlTimesWithSkip[4].offsetTime).toEqual(182);
       expect(validControlTimesWithSkip[4].split.time).toEqual(
         // Split should be calculated from 1 to 4 since we skip 2 and 3
-        validControlTimesWithSkip[4].timeWithOffset -
-          validControlTimesWithSkip[1].timeWithOffset
+        validControlTimesWithSkip[4].offsetTime -
+          validControlTimesWithSkip[1].offsetTime
       );
     });
 
@@ -167,8 +166,8 @@ describe("Result tests", () => {
         100
       );
       expect(
-        validControlTimes[3].timeWithOffset -
-          validControlTimesWithOffset[3].timeWithOffset
+        validControlTimes[3].offsetTime -
+          validControlTimesWithOffset[3].offsetTime
       ).toEqual(100);
 
       // Even offset time changes split times should be same as without offset
@@ -226,11 +225,9 @@ describe("Result tests", () => {
   });
 
   test("readerControl", () => {
+    expect(readerControl({ code: 31, offsetTime: 100, time: 100 })).toBeFalsy();
     expect(
-      readerControl({ code: 31, timeWithOffset: 100, time: 100 })
-    ).toBeFalsy();
-    expect(
-      readerControl({ code: 250, timeWithOffset: 100, time: 100 })
+      readerControl({ code: 250, offsetTime: 100, time: 100 })
     ).toBeTruthy();
   });
 
@@ -385,8 +382,8 @@ describe("Result tests", () => {
   });
 
   test("getStartTime", () => {
-    const resultStartTime = "2021-01-01T10:00:00Z";
-    const courseClassStartTime = "2021-01-01T12:00:00Z";
+    const resultStartTime = "2021-01-01T10:00:00.000Z";
+    const courseClassStartTime = "2021-01-01T12:00:00.000Z";
 
     expect(getStartTime(result1, courseClass1)).toEqual("");
 
@@ -540,14 +537,14 @@ describe("Result tests", () => {
   test("checkedControlTime", () => {
     const checked: ControlTime = {
       code: 999,
-      timeWithOffset: 10,
+      offsetTime: 10,
       time: 10,
       status: ControlTimeStatus.CHECKED,
     };
 
     const checked2: ControlTime = {
       code: 999,
-      timeWithOffset: -1,
+      offsetTime: -1,
       time: -1,
     };
 
@@ -667,17 +664,17 @@ describe("Result tests", () => {
     const resultWithLowBattery2 = clone(result2);
     resultWithLowBattery1.controlTimes[3] = {
       code: 99,
-      timeWithOffset: resultWithLowBattery1.controlTimes[2].timeWithOffset,
+      offsetTime: resultWithLowBattery1.controlTimes[2].offsetTime,
       time: resultWithLowBattery1.controlTimes[2].time,
     };
     resultWithLowBattery2.controlTimes[3] = {
       code: 99,
-      timeWithOffset: resultWithLowBattery2.controlTimes[2].timeWithOffset,
+      offsetTime: resultWithLowBattery2.controlTimes[2].offsetTime,
       time: resultWithLowBattery2.controlTimes[2].time,
     };
     resultWithLowBattery2.controlTimes[8] = {
       code: 99,
-      timeWithOffset: resultWithLowBattery2.controlTimes[7].timeWithOffset,
+      offsetTime: resultWithLowBattery2.controlTimes[7].offsetTime,
       time: resultWithLowBattery2.controlTimes[7].time,
     };
 
@@ -695,7 +692,7 @@ describe("Result tests", () => {
     // Should not trigger warning if control is not known (same timestamp as 99 control)
     resultWithLowBattery2.controlTimes[3] = {
       code: 99,
-      timeWithOffset: resultWithLowBattery2.controlTimes[2].time + 2,
+      offsetTime: resultWithLowBattery2.controlTimes[2].time + 2,
       time: resultWithLowBattery2.controlTimes[2].time + 2,
     };
     expect(

@@ -14,6 +14,7 @@ import { Passing } from "../models/passing";
 import { clone, timeDifference } from "./common";
 import { LowBatteryWarning } from "../models/chip-data";
 import { Event } from "../models/event";
+import { StringOrDate } from "../models/date";
 
 export const readerControl = (controlTime: ControlTime): boolean =>
   controlTime.code === 250;
@@ -27,8 +28,8 @@ export const getDuration = ({
   finishClosingTime,
 }: {
   duration?: number;
-  massStartTime?: string | Date;
-  finishClosingTime?: string | Date;
+  massStartTime?: StringOrDate;
+  finishClosingTime?: StringOrDate;
 }): number => {
   if (duration) {
     return duration * 60;
@@ -139,9 +140,9 @@ export const getResultTime = (
         (controlTime: ControlTime) =>
           controlTime.number === course.controls.length
       ) || result.controlTimes?.find(readerControl);
-    if (lastPunch?.timeWithOffset > 0) {
+    if (lastPunch?.offsetTime > 0) {
       // Last punch time + penalty min
-      const time: number = lastPunch.timeWithOffset + penalty;
+      const time: number = lastPunch.offsetTime + penalty;
       return time.toPositiveOrZero();
     }
   }
@@ -391,24 +392,24 @@ export const validateControlTimes = (
 
     if (controlTime) {
       controlTime.number = index + 1;
-      controlTime.timeWithOffset = checkedControlTime(controlTime)
+      controlTime.offsetTime = checkedControlTime(controlTime)
         ? controlTime.time
         : controlTime.time - offset;
       controlTime.split = {
         time:
-          controlTime.timeWithOffset -
+          controlTime.offsetTime -
           skipTime -
           (lastPunchTime > 0 ? lastPunchTime : 0),
       };
 
-      if (controlTime.timeWithOffset >= 0 && !control.freeOrder) {
+      if (controlTime.offsetTime >= 0 && !control.freeOrder) {
         if (control.skip) {
           skipTime += controlTime.split.time;
           controlTime.split.time = 0;
         }
 
-        controlTime.timeWithOffset -= skipTime;
-        lastPunchTime = controlTime.timeWithOffset;
+        controlTime.offsetTime -= skipTime;
+        lastPunchTime = controlTime.offsetTime;
       }
     } else {
       // If not controlTime and control is disabled then add controlTime as checked!
@@ -417,7 +418,7 @@ export const validateControlTimes = (
           ...{
             code: Array.isArray(control.code) ? control.code[0] : control.code,
             time: 0,
-            timeWithOffset: 0,
+            offsetTime: 0,
             number: index + 1,
           },
           status: ControlTimeStatus.CHECKED,
@@ -428,10 +429,10 @@ export const validateControlTimes = (
     // Update inside loop status
     //  isInsideLoop = checkIfInsideLoop(control, isInsideLoop);
   }
-  // TODO: check if timeWithOffset needs also skiptime?
+  // TODO: check if offsetTime needs also skiptime?
   const reader = controlTimes.find(readerControl);
   if (reader) {
-    reader.timeWithOffset -= offset;
+    reader.offsetTime -= offset;
   }
   return controlTimes;
 };
@@ -576,10 +577,10 @@ export const setControlPositions = (
     const splitTimes: number[] = [];
     results.forEach((result: Result) => {
       const controlTime = result.controlTimes?.find(
-        (c) => c.number === index + 1 && c.time > 0
+        (c) => c.number === index + 1 && c.offsetTime > 0
       );
       if (controlTime) {
-        legTimes.push(controlTime.time);
+        legTimes.push(controlTime.offsetTime);
         splitTimes.push(controlTime.split.time);
       }
     });
@@ -590,10 +591,10 @@ export const setControlPositions = (
         (c) => c.number === index + 1
       );
       if (controlTime && !checkedControlTime(controlTime)) {
-        const legPosition = legTimes.indexOf(controlTime.time) + 1;
+        const legPosition = legTimes.indexOf(controlTime.offsetTime) + 1;
         if (legPosition > 0) {
           controlTime.position = legPosition;
-          controlTime.difference = controlTime.time - legTimes[0];
+          controlTime.difference = controlTime.offsetTime - legTimes[0];
         }
         const splitPosition = controlTime.split?.time
           ? splitTimes.indexOf(controlTime.split.time) + 1
@@ -640,7 +641,10 @@ export const getMissingControls = (
 export const getStartTime = (
   result: Result,
   courseClass: CourseClass
-): string => courseClass.massStartTime || result.startTime || "";
+): string =>
+  courseClass.massStartTime || result.startTime
+    ? new Date(courseClass.massStartTime || result.startTime).toISOString()
+    : "";
 
 export const cloneRegistration = (
   registration: Result,
@@ -995,7 +999,7 @@ export const suggestCourseClass = (
             suggestedClass?.type === CourseClassType.ROGAINING && // Comparison between two Rogaining courses
             courseClass.type === CourseClassType.ROGAINING
           ) {
-            const finalTime = last(controlTimes)?.time || 0; // TODO: should get correct final time
+            const finalTime = last(controlTimes)?.offsetTime || 0; // TODO: should get correct final time
             const suggestedDuration = getDuration(suggestedClass);
             const duration = getDuration(courseClass);
             if (

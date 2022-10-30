@@ -17,6 +17,8 @@ export * from "./models/socket";
 export * from "./models/link";
 export * from "./models/map-information";
 export * from "./models/participant-metadata";
+export * from "./models/iof";
+export * from "./models/date";
 
 export * from "./utils/results";
 export * from "./utils/events";

@@ -1,6 +1,7 @@
 import { Device } from "./device";
 import { Checkpoint } from "./checkpoint";
 import { Result } from "./result";
+import { StringOrDate } from "./date";
 
 export class Passing {
   id: string;
@@ -12,9 +13,9 @@ export class Passing {
   checkpoint?: Checkpoint;
   checkpointId?: string;
   eventId?: string;
-  timestamp: string; // Date;
+  timestamp: StringOrDate;
   time?: number;
   position?: number;
   difference?: number;
-  updated?: string; // Date;
+  updated?: StringOrDate;
 }
