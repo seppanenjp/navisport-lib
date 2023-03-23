@@ -4,6 +4,13 @@ export enum ControlTimeStatus {
   CHECKED = "Checked",
 }
 
+export enum ControlTimeType {
+  START = "Start",
+  CONTROL = "Control",
+  FINISH = "Finish",
+  READ = "Read",
+}
+
 export interface ControlTime {
   code: number;
   time: number;
@@ -19,6 +26,7 @@ export interface ControlTime {
   totalDifference?: number; // For relay
 
   status?: ControlTimeStatus;
+  type?: ControlTimeType;
 
   timestamp?: StringOrDate;
 

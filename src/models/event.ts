@@ -34,6 +34,7 @@ export enum RaceType {
 }
 
 export enum EventType {
+  TRAINING = "Training",
   RACE = "Race",
   MOTION = "Motion",
 }

@@ -430,10 +430,10 @@ export const validateControlTimes = (
     //  isInsideLoop = checkIfInsideLoop(control, isInsideLoop);
   }
   // TODO: check if offsetTime needs also skiptime?
-  const reader = controlTimes.find(readerControl);
+  /* const reader = controlTimes.find(readerControl);
   if (reader) {
     reader.offsetTime -= offset;
-  }
+  } */
   return controlTimes;
 };
 
